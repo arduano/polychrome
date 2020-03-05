@@ -1,4 +1,5 @@
 import { Color } from "./misc";
+import { KeyAudio, KeyAudioPlayer } from "./audioHandler";
 
 type KeyPresser = {
     color: Color;
@@ -8,6 +9,7 @@ type KeyPresser = {
     pressTime: number;
     unpressTime?: number;
     fade: number;
+    audioPlayer: KeyAudio | null;
 }
 
 type KeyState = {
@@ -17,6 +19,7 @@ type KeyState = {
 }
 
 const fadeTime = 0.5;
+const keyDesaturate = 80;
 
 export default class PianoState {
     keys: KeyState[] = []
@@ -25,7 +28,11 @@ export default class PianoState {
     keyNums: number[] = []
     keyStarts: number[] = []
 
-    constructor() {
+    player: KeyAudioPlayer;
+
+    constructor(player: KeyAudioPlayer) {
+        this.player = player;
+
         let blacki = 0;
         let whitei = 0;
 
@@ -56,6 +63,9 @@ export default class PianoState {
     pressKey(key: number, volume: number, agent: string, color: Color) {
         let k = this.keys[key];
         if (!k) return;
+
+        let player = this.player.pressKey(key, '');
+
         k.pressers.push({
             agent: agent,
             color: color,
@@ -63,6 +73,7 @@ export default class PianoState {
             fade: 1,
             pressTime: Date.now(),
             pressed: true,
+            audioPlayer: player
         })
     }
 
@@ -75,6 +86,7 @@ export default class PianoState {
             if (p.agent === agent && p.pressed) {
                 p.unpressTime = Date.now();
                 p.pressed = false;
+                this.player.unpressKey(p.audioPlayer);
                 break;
             }
         }
@@ -82,7 +94,7 @@ export default class PianoState {
 
     updateAllKeys() {
         let time = Date.now();
-        this.keys.forEach(key => {
+        this.keys.forEach((key, i) => {
             let col: Color = key.mixedColor;
             col.r = key.color.r;
             col.g = key.color.g;
@@ -122,11 +134,22 @@ export default class PianoState {
                 let p = key.pressers[i];
                 let fade = p.fade;
                 let unfade = 1 - fade;
-                col.r = p.color.r * fade + col.r * unfade; 
-                col.g = p.color.g * fade + col.g * unfade; 
-                col.b = p.color.b * fade + col.b * unfade; 
+                col.r = p.color.r * fade + col.r * unfade;
+                col.g = p.color.g * fade + col.g * unfade;
+                col.b = p.color.b * fade + col.b * unfade;
             }
-            
+
+            if (this.blackKeys[i]) {
+                col.r = Math.max(col.r - keyDesaturate);
+                col.g = Math.max(col.g - keyDesaturate);
+                col.b = Math.max(col.b - keyDesaturate);
+            }
+            else {
+                col.r = Math.min(col.r + keyDesaturate);
+                col.g = Math.min(col.g + keyDesaturate);
+                col.b = Math.min(col.b + keyDesaturate);
+            }
+
             key.mixedColor = col;
         });
     }

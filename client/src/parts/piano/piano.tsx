@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import PianoState from '../../data/pianoState';
+import { Color } from '../../data/misc';
 
 const PianoContainer = styled.div`
     width: 100%;
@@ -10,9 +11,13 @@ const PianoContainer = styled.div`
     justify-content: center;
 `;
 
+const PianoShadow = styled.div`
+    box-shadow: 0 0 10px black;
+`;
+
 const PianoCanvas = styled.canvas`
-    width: 1000px;
-    height: 1000px;
+    width: 92%;
+    box-shadow: 0 0 20px 5px black;
 `;
 
 let first = 21;
@@ -22,7 +27,10 @@ const keyAspect = 9;
 const blackHeight = 1 / 3 * 2;
 const blackWidth = 0.7;
 
+let lastKeyClicked = -1;
+
 function Piano(props: { keyboard: PianoState }) {
+
     const [renderCanvas, setRenderCanvas] = useState<HTMLCanvasElement | null>(null)
 
     const { blackKeys, keyNums } = props.keyboard;
@@ -49,24 +57,52 @@ function Piano(props: { keyboard: PianoState }) {
         ctx.fillStyle = 'white';
         //ctx.fillRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight);
 
+        function getColStr(col: Color) {
+            return `rgb(${col.r},${col.g},${col.b})`;
+        }
+
+        function getColAStr(col: Color, a: number) {
+            return `rgba(${col.r},${col.g},${col.b},${a})`;
+        }
+
         for (var blackPass = 0; blackPass < 3; blackPass++) {
             for (var i = first; i < last; i++) {
                 var n = i - first;
                 if (n != last - 1) {
                     let keyData = keyboard.keys[i];
-                    let col = keyData.mixedColor;
-                    let colStr = `rgb(${col.r},${col.g},${col.b})`
                     //Black key
                     if (blackKeys[i] && blackPass === 2) {
                         let wn = keyNums[i - 1] - keyNums[first]
-                        ctx.fillStyle = colStr;
+                        ctx.fillStyle = getColStr(keyData.mixedColor);
                         ctx.fillRect((wn + 1 - blackWidth / 2) / whiteKeys * ctx.canvas.clientWidth, 0, blackWidth / whiteKeys * ctx.canvas.clientWidth, ctx.canvas.clientHeight * blackHeight);
                     }
                     //White key
                     else if (!blackKeys[i] && blackPass === 0) {
                         let wn = keyNums[i] - keyNums[first]
-                        ctx.fillStyle = colStr;
-                        ctx.fillRect(wn / whiteKeys * ctx.canvas.clientWidth, 0, 1 / whiteKeys * ctx.canvas.clientWidth, ctx.canvas.clientHeight);
+
+                        let left = wn / whiteKeys * ctx.canvas.clientWidth;
+                        let width = 1 / whiteKeys * ctx.canvas.clientWidth;
+
+                        ctx.fillStyle = getColStr(keyData.mixedColor);
+                        ctx.fillRect(left, 0, width, ctx.canvas.clientHeight);
+
+                        let padding = 0.01;
+                        let size = 0.1;
+                        let top = 1;
+
+                        let sidePadding = 0.1 / whiteKeys * ctx.canvas.clientWidth
+                        left += sidePadding;
+                        width -= sidePadding * 2;
+
+                        //for (let i = keyData.pressers.length - 1; i >= 0; i--) {
+                        for (let i = 0; i < keyData.pressers.length; i++) {
+                            let presser = keyData.pressers[i];
+                            let height = presser.fade * presser.volume;
+                            top -= height * size + padding;
+
+                            ctx.fillStyle = getColAStr(presser.color, presser.fade);
+                            ctx.fillRect(left, top * ctx.canvas.clientHeight, width, height * size * ctx.canvas.clientHeight);
+                        }
                     }
                     //White key edge
                     else if (!blackKeys[i] && blackPass === 1) {
@@ -84,6 +120,7 @@ function Piano(props: { keyboard: PianoState }) {
     }
 
     function pianoClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+        if (event.button != 0) return;
         const cnv = event.target as HTMLCanvasElement;
         if (!cnv) return;
         let cnvRect = cnv.getBoundingClientRect();
@@ -117,15 +154,29 @@ function Piano(props: { keyboard: PianoState }) {
             if (blackKeys[keyNumber - 1] && posInKey < halfBlackWidth) keyNumber--;
             if (blackKeys[keyNumber + 1] && posInKey > 1 - halfBlackWidth) keyNumber++;
         }
-
+        if (lastKeyClicked != -1) keyboard.unpressKey(lastKeyClicked, '');
         keyboard.pressKey(keyNumber, 1, '', { r: 255, g: 0, b: 0 });
-        setTimeout(() => keyboard.unpressKey(keyNumber, ''), 1000);
+        lastKeyClicked = keyNumber;
+
+        //setTimeout(() => keyboard.unpressKey(keyNumber, ''), 1000);
     }
+
+    function mouseUp() {
+        if (lastKeyClicked == -1) return;
+        keyboard.unpressKey(lastKeyClicked, '')
+        lastKeyClicked = -1;
+    }
+
+    useEffect(() => {
+        window.addEventListener('mouseup', mouseUp);
+        return () => {
+            window.removeEventListener('mouseup', mouseUp);
+        }
+    })
 
     return (
         <PianoContainer>
-            <canvas
-                style={{ width: '80%' }}
+            <PianoCanvas
                 onMouseDown={pianoClick}
                 ref={c => {
                     if (c && c != renderCanvas) {

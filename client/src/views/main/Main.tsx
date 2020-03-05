@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Piano from '../../parts/piano/piano';
 import styled from 'styled-components';
 import User from '../../parts/user/user';
 import PianoState from '../../data/pianoState';
+import runningAudioPlayer, { KeyAudioPlayer } from '../../data/audioHandler';
 
 const barHeight = 80;
 const iconSize = 60;
@@ -48,7 +49,11 @@ const UserContainer = styled.div`
 `;
 
 function Main(props: {}) {
-    const [keyboardState, setKeyboardState] = useState(new PianoState());
+    const [keyboardState, setKeyboardState] = useState(new PianoState(runningAudioPlayer));
+
+    useEffect(() => {
+
+    })
     
     return (
         <Container>
@@ -58,6 +63,9 @@ function Main(props: {}) {
             <UserBar>
                 <UserContainer>
                     <User name={'Arduano'} pfp={'https://i.imgur.com/2ZipxzK.png'}/>
+                </UserContainer>
+                <UserContainer>
+                    <User name={'Kaydax'} pfp={'https://cdn.kaydax.xyz/Untitled.png'}/>
                 </UserContainer>
             </UserBar>
         </Container>
