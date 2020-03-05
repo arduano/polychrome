@@ -72,9 +72,36 @@ function Piano(props: { keyboard: PianoState }) {
                     let keyData = keyboard.keys[i];
                     //Black key
                     if (blackKeys[i] && blackPass === 2) {
+                        let press = keyData.pressStrength * ctx.canvas.clientHeight * 0.01;
+
                         let wn = keyNums[i - 1] - keyNums[first]
+                        let left = (wn + 1 - blackWidth / 2) / whiteKeys * ctx.canvas.clientWidth;
+                        let width = blackWidth / whiteKeys * ctx.canvas.clientWidth;
+
+                        ctx.save();
                         ctx.fillStyle = getColStr(keyData.mixedColor);
-                        ctx.fillRect((wn + 1 - blackWidth / 2) / whiteKeys * ctx.canvas.clientWidth, 0, blackWidth / whiteKeys * ctx.canvas.clientWidth, ctx.canvas.clientHeight * blackHeight);
+                        ctx.shadowColor = 'black';
+                        ctx.shadowBlur = 5;
+                        ctx.fillRect(left, press, width, ctx.canvas.clientHeight * blackHeight);
+                        ctx.restore();
+
+                        let padding = 0.01;
+                        let size = 0.1;
+                        let top = 1;
+
+                        let sidePadding = 0.1 / whiteKeys * ctx.canvas.clientWidth
+                        left += sidePadding;
+                        width -= sidePadding * 2;
+
+                        //for (let i = keyData.pressers.length - 1; i >= 0; i--) {
+                        for (let i = 0; i < keyData.pressers.length; i++) {
+                            let presser = keyData.pressers[i];
+                            let height = presser.fade * presser.volume * blackHeight;
+                            top -= height * size + padding;
+
+                            ctx.fillStyle = getColAStr(presser.color, presser.fade);
+                            ctx.fillRect(left, (top - (1 - blackHeight)) * ctx.canvas.clientHeight, width, height * size * ctx.canvas.clientHeight);
+                        }
                     }
                     //White key
                     else if (!blackKeys[i] && blackPass === 0) {
@@ -83,8 +110,10 @@ function Piano(props: { keyboard: PianoState }) {
                         let left = wn / whiteKeys * ctx.canvas.clientWidth;
                         let width = 1 / whiteKeys * ctx.canvas.clientWidth;
 
+                        let press = keyData.pressStrength * ctx.canvas.clientHeight * 0.01;
+
                         ctx.fillStyle = getColStr(keyData.mixedColor);
-                        ctx.fillRect(left, 0, width, ctx.canvas.clientHeight);
+                        ctx.fillRect(left, press, width, ctx.canvas.clientHeight);
 
                         let padding = 0.01;
                         let size = 0.1;

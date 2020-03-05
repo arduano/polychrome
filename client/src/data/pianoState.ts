@@ -1,19 +1,20 @@
 import { Color } from "./misc";
-import { KeyAudio, KeyAudioPlayer } from "./audioHandler";
+import { KeyAudioPlayer } from "./audioHandler";
 
 type KeyPresser = {
     color: Color;
+    key: number;
     volume: number;
     agent: string;
     pressed: boolean;
     pressTime: number;
     unpressTime?: number;
     fade: number;
-    audioPlayer: KeyAudio | null;
 }
 
 type KeyState = {
     pressers: KeyPresser[];
+    pressStrength: number;
     mixedColor: Color;
     color: Color;
 }
@@ -46,13 +47,15 @@ export default class PianoState {
             if (black) {
                 this.keys.push({
                     pressers: [],
+                    pressStrength: 0,
                     mixedColor: { r: 0, g: 0, b: 0 },
-                    color: { r: 0, g: 0, b: 0 },
+                    color: { r: 70, g: 70, b: 100 },
                 });
             }
             else {
                 this.keys.push({
                     pressers: [],
+                    pressStrength: 0,
                     mixedColor: { r: 255, g: 255, b: 255 },
                     color: { r: 255, g: 255, b: 255 },
                 });
@@ -64,16 +67,16 @@ export default class PianoState {
         let k = this.keys[key];
         if (!k) return;
 
-        let player = this.player.pressKey(key, '');
+        this.player.pressKey(key, '');
 
         k.pressers.push({
             agent: agent,
+            key: key,
             color: color,
             volume: volume,
             fade: 1,
             pressTime: Date.now(),
             pressed: true,
-            audioPlayer: player
         })
     }
 
@@ -86,7 +89,7 @@ export default class PianoState {
             if (p.agent === agent && p.pressed) {
                 p.unpressTime = Date.now();
                 p.pressed = false;
-                this.player.unpressKey(p.audioPlayer);
+                this.player.unpressKey(p.key, '');
                 break;
             }
         }
@@ -118,16 +121,19 @@ export default class PianoState {
                 if (key.pressers[firstPressed].pressed) break;
             }
 
+            let pressState = 0;
             if (firstPressed == key.pressers.length) {
                 col.r = key.color.r;
                 col.g = key.color.g;
                 col.b = key.color.b;
+                pressState = 0;
             }
             else {
                 let p = key.pressers[firstPressed];
                 col.r = p.color.r;
                 col.g = p.color.g;
                 col.b = p.color.b;
+                pressState = 1;
             }
 
             for (let i = firstPressed - 1; i >= 0; i--) {
@@ -137,6 +143,7 @@ export default class PianoState {
                 col.r = p.color.r * fade + col.r * unfade;
                 col.g = p.color.g * fade + col.g * unfade;
                 col.b = p.color.b * fade + col.b * unfade;
+                pressState += fade * (1 - pressState);
             }
 
             if (this.blackKeys[i]) {
@@ -150,6 +157,7 @@ export default class PianoState {
                 col.b = Math.min(col.b + keyDesaturate);
             }
 
+            key.pressStrength = pressState;
             key.mixedColor = col;
         });
     }

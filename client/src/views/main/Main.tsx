@@ -3,7 +3,7 @@ import Piano from '../../parts/piano/piano';
 import styled from 'styled-components';
 import User from '../../parts/user/user';
 import PianoState from '../../data/pianoState';
-import runningAudioPlayer, { KeyAudioPlayer } from '../../data/audioHandler';
+import { KeyAudioPlayer } from '../../data/audioHandler';
 
 const barHeight = 80;
 const iconSize = 60;
@@ -49,7 +49,7 @@ const UserContainer = styled.div`
 `;
 
 function Main(props: {}) {
-    const [keyboardState, setKeyboardState] = useState(new PianoState(runningAudioPlayer));
+    const [keyboardState, setKeyboardState] = useState(new PianoState(new KeyAudioPlayer()));
 
     useEffect(() => {
 
