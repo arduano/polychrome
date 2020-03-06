@@ -36,19 +36,23 @@ export class KeyAudioPlayer {
         let ap = new KeyAudioPlayer();
 
         ap.keyPlayers = [];
-        let bufferWaiters: Promise<AudioBuffer>[] = [];
-        for (let i = 0; i < 128; i++) {
-            ap.keyPlayers.push([]);
+        let urls = [...Array(128).keys()].map(i => WebApi.getAudioUrl(i));
 
-            bufferWaiters.push(
-                (async () => {
-                    let raw = await window.fetch(WebApi.getAudioUrl(i));
-                    let buffer = await raw.arrayBuffer();
-                    let audio = await context.decodeAudioData(buffer);
-                    return audio;
-                })()
-            )
-        }
+        let cache = await window.caches.open('piano-audio');
+
+        let bufferWaiters = urls.map(async key => {
+            ap.keyPlayers.push([]);
+            
+            let resp = await cache.match(key);
+            if (!resp) {
+                await cache.add(key);
+                resp = await cache.match(key);
+            }
+            let buffer = await resp!.arrayBuffer();
+            let audio = await context.decodeAudioData(buffer);
+            return audio;
+        })
+
         ap.audioNoteBuffers = await Promise.all(bufferWaiters);
 
         return ap;

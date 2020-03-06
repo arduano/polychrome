@@ -13,6 +13,7 @@
     "strict": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
