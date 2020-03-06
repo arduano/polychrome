@@ -1,8 +1,7 @@
 import axios from "axios";
+import { MainInfoReturn } from "../data/misc";
 
 const baseUrl = 'http://localhost:8080';
-
-export type MainInfoReturn = { defaultRoom: string }
 
 export class WebApi {
     static async getMainInfo() {

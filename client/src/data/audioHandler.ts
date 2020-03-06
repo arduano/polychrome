@@ -24,7 +24,7 @@ export class KeyAudioPlayer {
 
     pressKey(key: number, velocity: number, instrument: string) {
         if(!this.audioLoaded) return;
-        this.synth.triggerAttack(`C${key}`, undefined, velocity);
+        this.synth.triggerAttack(`C${key}`, undefined, velocity / 3);
     }
 
     unpressKey(key: number, instrument: string) {

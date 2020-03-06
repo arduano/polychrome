@@ -16,3 +16,5 @@ export interface Room {
     urlName: string;
     owner: string;
 }
+
+export type MainInfoReturn = { defaultRoom: string }

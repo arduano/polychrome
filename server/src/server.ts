@@ -35,6 +35,12 @@ app.get('/api/info', (req, res) => {
     })
 })
 
+app.get('/api/info', (req, res) => {
+    res.status(200).send({
+        defaultRoom: 'main',
+    })
+})
+
 let token = jwt.sign({t:'guest',id:'234325'},'secret');
 console.log(token);
 let decode = jwt.verify(token,'secret');

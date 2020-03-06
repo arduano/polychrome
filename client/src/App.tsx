@@ -8,11 +8,12 @@ import {
   Redirect,
   Link
 } from "react-router-dom";
-import { MainInfoReturn, WebApi } from './web/restful';
+import { WebApi } from './web/restful';
+import { MainInfoReturn } from './data/misc';
 
 function App() {
   const [mainInfo, setMainInfo] = useState<MainInfoReturn | null>(null);
-  WebApi.getMainInfo().then(setMainInfo);
+  if(!mainInfo) WebApi.getMainInfo().then(setMainInfo);
 
   return (
     <Router>

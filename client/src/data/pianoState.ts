@@ -1,5 +1,6 @@
 import { Color } from "./misc";
 import { KeyAudioPlayer } from "./audioHandler";
+import { MidiHandler } from "./midiHandler";
 
 type KeyPresser = {
     color: Color;
@@ -19,7 +20,7 @@ type KeyState = {
     color: Color;
 }
 
-const fadeTime = 0.5;
+const fadeTime = 0.3;
 const keyDesaturate = 80;
 
 export default class PianoState {
@@ -30,9 +31,15 @@ export default class PianoState {
     keyStarts: number[] = []
 
     player: KeyAudioPlayer;
+    midi: MidiHandler;
 
-    constructor(player: KeyAudioPlayer) {
+    constructor(player: KeyAudioPlayer, midi: MidiHandler) {
         this.player = player;
+        this.midi = midi;
+
+        midi.getInputs().then(inputs => {
+            midi.listenTo(inputs[0], this)
+        })
 
         let blacki = 0;
         let whitei = 0;
@@ -104,9 +111,24 @@ export default class PianoState {
             col.b = key.color.b;
             for (let i = 0; i < key.pressers.length; i++) {
                 let p = key.pressers[i];
+                let autoFadeTime = 0.5;
                 if (!p.pressed) {
-                    let fade = 1 - (time - p.unpressTime!) / 1000 / fadeTime;
-                    if (fade < 0) {
+                    let fade1 = 1 - ((time - p.pressTime!) / 1000) / fadeTime + autoFadeTime;
+                    let fade2 = 1 - (time - p.unpressTime!) / 1000 / fadeTime;
+                    let fade = Math.min(Math.max(Math.min(fade1, fade2), 0), 1);
+                    if (fade <= 0) {
+                        key.pressers.splice(i, 1);
+                        i--;
+                    }
+                    else {
+                        p.fade = fade;
+                    }
+                }
+                else {
+                    let fade = 1 - ((time - p.pressTime!) / 1000) / fadeTime + autoFadeTime;
+                    fade = Math.min(Math.max(fade, 0), 1);
+                    if (fade <= 0) {
+                        this.player.unpressKey(p.key, '');
                         key.pressers.splice(i, 1);
                         i--;
                     }
@@ -118,7 +140,7 @@ export default class PianoState {
 
             let firstPressed = 0;
             for (; firstPressed < key.pressers.length; firstPressed++) {
-                if (key.pressers[firstPressed].pressed) break;
+                if (key.pressers[firstPressed].fade == 1) break;
             }
 
             let pressState = 0;
@@ -157,7 +179,7 @@ export default class PianoState {
                 col.b = Math.min(col.b + keyDesaturate);
             }
 
-            key.pressStrength = pressState;
+            key.pressStrength = Math.max(pressState * 2 - 1);
             key.mixedColor = col;
         });
     }

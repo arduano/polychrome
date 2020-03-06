@@ -27,10 +27,9 @@ const PfpContainer = styled.div`
     align-items: center;
 `;
 
-const Pfp = styled.div<{ url: string }>`
+const Pfp = styled.div`
     width: 20px;
     height: 20px;
-    background-image: url("${props => props.url}");
     background-size: cover;
     border: solid 2px green;
     box-shadow: 0 0 3px black;
@@ -60,7 +59,7 @@ function User(props: UserProps) {
     return (
         <UserContainer>
             <PfpContainer>
-                <Pfp url={props.pfp} />
+                <Pfp style={{ backgroundImage: props.pfp }} />
             </PfpContainer>
             <Content>
                 <Username>

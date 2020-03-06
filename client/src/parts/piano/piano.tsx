@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as webmidi from "webmidi";
 import styled from 'styled-components';
 import PianoState from '../../data/pianoState';
 import { Color } from '../../data/misc';
@@ -194,6 +195,10 @@ function Piano(props: { keyboard: PianoState }) {
         if (lastKeyClicked == -1) return;
         keyboard.unpressKey(lastKeyClicked, '')
         lastKeyClicked = -1;
+    }
+
+    function midiNoteOn() {
+        
     }
 
     useEffect(() => {

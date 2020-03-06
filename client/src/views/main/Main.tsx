@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import User from '../../parts/user/user';
 import PianoState from '../../data/pianoState';
 import { KeyAudioPlayer } from '../../data/audioHandler';
+import { MidiHandler } from '../../data/midiHandler';
 
 const barHeight = 80;
 const iconSize = 60;
@@ -49,16 +50,16 @@ const UserContainer = styled.div`
 `;
 
 function Main(props: {}) {
-    const [keyboardState, setKeyboardState] = useState(new PianoState(new KeyAudioPlayer()));
+    const [keyboardState, setKeyboardState] = useState<PianoState | undefined>(undefined);
 
     useEffect(() => {
-
-    })
+        setKeyboardState(new PianoState(new KeyAudioPlayer(), new MidiHandler()));
+    }, [])
     
     return (
         <Container>
             <PianoContainer>
-                <Piano keyboard={keyboardState} />
+                {keyboardState && <Piano keyboard={keyboardState} />}
             </PianoContainer>
             <UserBar>
                 <UserContainer>
