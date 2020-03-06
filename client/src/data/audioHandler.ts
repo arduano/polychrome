@@ -1,5 +1,6 @@
 import { link } from "fs";
 import axios from 'axios';
+import { WebApi } from "../web/restful";
 const Tone = require('tone');
 
 export class KeyAudioPlayer {
@@ -11,7 +12,7 @@ export class KeyAudioPlayer {
         let bufferWaiters: Promise<void>[] = [];
         for (let i = 0; i < 128; i++) {
             bufferWaiters.push(new Promise(res => {
-                tones[`C${i}`] = new Tone.Buffer(`http://localhost:8080/api/audio/${i}`, function(){
+                tones[`C${i}`] = new Tone.Buffer(WebApi.getAudioUrl(i), function(){
                     res();
                 });
             }));
@@ -21,9 +22,9 @@ export class KeyAudioPlayer {
         this.synth.release = 1;
     }
 
-    pressKey(key: number, instrument: string) {
+    pressKey(key: number, velocity: number, instrument: string) {
         if(!this.audioLoaded) return;
-        this.synth.triggerAttack(`C${key}`);
+        this.synth.triggerAttack(`C${key}`, undefined, velocity);
     }
 
     unpressKey(key: number, instrument: string) {

@@ -63,17 +63,17 @@ export default class PianoState {
         }
     }
 
-    pressKey(key: number, volume: number, agent: string, color: Color) {
+    pressKey(key: number, velocity: number, agent: string, color: Color) {
         let k = this.keys[key];
         if (!k) return;
 
-        this.player.pressKey(key, '');
+        this.player.pressKey(key, velocity, '');
 
         k.pressers.push({
             agent: agent,
             key: key,
             color: color,
-            volume: volume,
+            volume: velocity,
             fade: 1,
             pressTime: Date.now(),
             pressed: true,

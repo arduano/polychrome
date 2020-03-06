@@ -3,5 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "arduano <leonid.shchurov@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "client": "cd ./client && yarn start",
+    "server": "cd ./server && yarn start"
+  }
 }

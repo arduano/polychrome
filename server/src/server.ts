@@ -1,5 +1,6 @@
 import express from 'express';
 import fs from 'fs';
+import jwt from 'jsonwebtoken';
 const bodyparser = require('body-parser');
 
 const app = express()
@@ -17,8 +18,8 @@ let baseUrl = '/api'
 function getAudioPath(num: number) {
     let n = num.toFixed(0);
     while (n.length < 3) n = '0' + n;
-    let path = './src/audio/KEPSREC' + n + '.ogg';
-    if (!fs.existsSync(path)) path = './src/audio/hammer.ogg';
+    let path = './audio/KEPSREC' + n + '.ogg';
+    if (!fs.existsSync(path)) path = './audio/hammer.ogg';
         return path;
 }
 
@@ -27,5 +28,16 @@ app.get('/api/audio/:key', (req, res) => {
     let buffer = fs.readFileSync(getAudioPath(parseInt(key)))
     res.writeHead(200, 'SUCCESS', { 'content-type': 'audio/ogg' }).end(buffer)
 })
+
+app.get('/api/info', (req, res) => {
+    res.status(200).send({
+        defaultRoom: 'main',
+    })
+})
+
+let token = jwt.sign({t:'guest',id:'234325'},'secret');
+console.log(token);
+let decode = jwt.verify(token,'secret');
+console.log(decode)
 
 app.listen(port, () => console.log(`App listening on port ${port}!`))
