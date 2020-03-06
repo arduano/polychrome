@@ -11,6 +11,7 @@ class GlobalStore {
     user = new UserStore();
 
     @observable token?: string;
-    
+
     @observable defaultRoom?: string;
+    @observable volume: number = 1;
 }

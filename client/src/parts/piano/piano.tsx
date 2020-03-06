@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import PianoState from '../../data/pianoState';
 import { Color } from '../../data/misc';
 
-const PianoContainer = styled.div`
+const Container = styled.div`
     width: 100%;
     height: 100%;
     display: flex;
@@ -12,13 +12,14 @@ const PianoContainer = styled.div`
     justify-content: center;
 `;
 
-const PianoShadow = styled.div`
-    box-shadow: 0 0 10px black;
+const PianoContainer = styled.div`
+    width: 92%;
+    box-shadow: 0 0 20px 15px black;
 `;
 
 const PianoCanvas = styled.canvas`
-    width: 92%;
-    box-shadow: 0 0 20px 5px black;
+    width: calc(100% + 20px);
+    margin: -10px;
 `;
 
 let first = 21;
@@ -184,6 +185,10 @@ function Piano(props: { keyboard: PianoState }) {
             if (blackKeys[keyNumber - 1] && posInKey < halfBlackWidth) keyNumber--;
             if (blackKeys[keyNumber + 1] && posInKey > 1 - halfBlackWidth) keyNumber++;
         }
+
+        if (keyNumber < first) keyNumber = first;
+        if (keyNumber >= last) keyNumber = last - 1;
+
         if (lastKeyClicked != -1) keyboard.unpressKey(lastKeyClicked, '');
         keyboard.pressKey(keyNumber, 1, '', { r: 255, g: 0, b: 0 });
         lastKeyClicked = keyNumber;
@@ -198,7 +203,7 @@ function Piano(props: { keyboard: PianoState }) {
     }
 
     function midiNoteOn() {
-        
+
     }
 
     useEffect(() => {
@@ -209,18 +214,20 @@ function Piano(props: { keyboard: PianoState }) {
     })
 
     return (
-        <PianoContainer>
-            <PianoCanvas
-                onMouseDown={pianoClick}
-                ref={c => {
-                    if (c && c != renderCanvas) {
-                        setRenderCanvas(c);
-                        draw()
-                    }
-                }}
-                id={'piano-canvas'}
-            />
-        </PianoContainer>
+        <Container>
+            <PianoContainer>
+                <PianoCanvas
+                    onMouseDown={pianoClick}
+                    ref={c => {
+                        if (c && c != renderCanvas) {
+                            setRenderCanvas(c);
+                            draw()
+                        }
+                    }}
+                    id={'piano-canvas'}
+                />
+            </PianoContainer>
+        </Container>
     )
 }
 

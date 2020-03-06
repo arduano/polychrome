@@ -5,6 +5,7 @@ import User from '../../parts/user/user';
 import PianoState from '../../data/pianoState';
 import { KeyAudioPlayer } from '../../data/audioHandler';
 import { MidiHandler } from '../../data/midiHandler';
+import Toolbar from '../../parts/toolbar/toolbar';
 
 const barHeight = 80;
 const iconSize = 60;
@@ -49,6 +50,14 @@ const UserContainer = styled.div`
     margin: 5px;
 `;
 
+const ToolbarContainer = styled.div`
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 3em;
+`;
+
 interface MainProps {
     audioPlayer: KeyAudioPlayer;
     midiHandler: MidiHandler;
@@ -63,9 +72,9 @@ function Main(props: MainProps) {
 
     return (
         <Container>
-            <PianoContainer>
-                {keyboardState && <Piano keyboard={keyboardState} />}
-            </PianoContainer>
+            <ToolbarContainer>
+                <Toolbar btnTitle={'Test'} />
+            </ToolbarContainer>
             <UserBar>
                 <UserContainer>
                     <User name={'Arduano'} pfp={'https://i.imgur.com/2ZipxzK.png'} />
@@ -74,6 +83,9 @@ function Main(props: MainProps) {
                     <User name={'Kaydax'} pfp={'https://cdn.kaydax.xyz/Untitled.png'} />
                 </UserContainer>
             </UserBar>
+            <PianoContainer>
+                {keyboardState && <Piano keyboard={keyboardState} />}
+            </PianoContainer>
         </Container>
     )
 }

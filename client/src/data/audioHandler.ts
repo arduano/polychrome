@@ -5,7 +5,7 @@ import { WebApi } from "../web/restful";
 var context = new AudioContext();
 
 let falloff = 0.3;
-let constantVolumeScale = 0.3;
+let constantVolumeScale = 0.2;
 
 type NotePlayer = {
     source: AudioBufferSourceNode;
@@ -39,10 +39,10 @@ export class KeyAudioPlayer {
         let urls = [...Array(128).keys()].map(i => WebApi.getAudioUrl(i));
 
         let cache = await window.caches.open('piano-audio');
-
+        
         let bufferWaiters = urls.map(async key => {
             ap.keyPlayers.push([]);
-            
+
             let resp = await cache.match(key);
             if (!resp) {
                 await cache.add(key);

@@ -22,7 +22,7 @@ type KeyState = {
 
 const fadeTime = 0.3;
 const keyDesaturate = 80;
-let autoFadeTime = 7;
+let autoFadeTime = 5;
 
 export default class PianoState {
     keys: KeyState[] = []
