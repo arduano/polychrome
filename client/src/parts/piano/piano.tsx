@@ -192,7 +192,7 @@ function Piano(props: { keyboard: PianoState }) {
     }
 
     function mouseUp() {
-        if (lastKeyClicked == -1) return;
+        if (lastKeyClicked === -1) return;
         keyboard.unpressKey(lastKeyClicked, '')
         lastKeyClicked = -1;
     }

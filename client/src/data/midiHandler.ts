@@ -2,10 +2,17 @@ import { default as webmidi, Input, InputEventNoteon, InputEventNoteoff } from "
 import PianoState from "./pianoState";
 
 export class MidiHandler {
-    webMidiLoader: Promise<void>;
+    private constructor() {
 
-    constructor() {
-        this.webMidiLoader = new Promise((ret, rej) => {
+    }
+
+    static async create() {
+        let mh = new MidiHandler();
+
+        mh.noteOn = mh.noteOn.bind(mh);
+        mh.noteOff = mh.noteOff.bind(mh);
+
+        await new Promise((ret, rej) => {
             webmidi.enable(function (err) {
                 err ? console.log("WebMIDI could not start!") : console.log("WebMIDI started!");
 
@@ -16,9 +23,10 @@ export class MidiHandler {
                 console.log('Outputs:', webmidi.outputs);
             });
         });
+        return mh;
+    }
 
-        this.noteOn = this.noteOn.bind(this);
-        this.noteOff = this.noteOff.bind(this);
+    async init() {
     }
 
     pianoState: PianoState | undefined = undefined;
@@ -30,7 +38,7 @@ export class MidiHandler {
         this.currentInput = device;
 
         console.log(device);
-        
+
         device.addListener('noteon', 'all', this.noteOn);
         device.addListener('noteoff', 'all', this.noteOff);
         device.addListener('noteon', 'all', console.log);
@@ -51,8 +59,7 @@ export class MidiHandler {
         this.currentInput = undefined;
     }
 
-    async getInputs() {
-        await this.webMidiLoader;
+    getInputs() {
         return webmidi.inputs;
     }
 }

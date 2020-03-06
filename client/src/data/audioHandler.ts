@@ -24,17 +24,21 @@ function toArrayBuffer(buf: Buffer) {
 
 export class KeyAudioPlayer {
     synth: any;
-    audioLoaded = false;
 
-    audioNoteBuffers?: AudioBuffer[];
+    audioNoteBuffers: AudioBuffer[] = [];
 
-    keyPlayers: NotePlayer[][];
+    keyPlayers: NotePlayer[][] = [];
 
-    constructor() {
-        this.keyPlayers = [];
+    private constructor() {
+    }
+
+    static async create() {
+        let ap = new KeyAudioPlayer();
+
+        ap.keyPlayers = [];
         let bufferWaiters: Promise<AudioBuffer>[] = [];
         for (let i = 0; i < 128; i++) {
-            this.keyPlayers.push([]);
+            ap.keyPlayers.push([]);
 
             bufferWaiters.push(
                 (async () => {
@@ -45,19 +49,17 @@ export class KeyAudioPlayer {
                 })()
             )
         }
-        Promise.all(bufferWaiters).then(buffers => {
-            this.audioNoteBuffers = buffers;
-            this.audioLoaded = true;
-        })
+        ap.audioNoteBuffers = await Promise.all(bufferWaiters);
+
+        return ap;
     }
 
     pressKey(key: number, velocity: number, instrument: string) {
-        if (!this.audioLoaded) return;
         var source = context.createBufferSource()
         var gain = context.createGain();
         source.connect(gain);
         gain.connect(context.destination);
-        let buffer = this.audioNoteBuffers![key];
+        let buffer = this.audioNoteBuffers[key];
         source.buffer = buffer;
         gain.gain.value = Math.pow(velocity, 2) * constantVolumeScale;
         source.start();
@@ -66,15 +68,14 @@ export class KeyAudioPlayer {
             gain, source,
             removed: false
         }
-        
+
         this.keyPlayers[key].push(player);
 
         this.setRemoveTimeout(player, buffer.duration * 1000);
     }
 
     unpressKey(key: number, instrument: string) {
-        if (!this.audioLoaded) return;
-        if(this.keyPlayers[key].length == 0) return;
+        if (this.keyPlayers[key].length === 0) return;
         let player = this.keyPlayers[key][this.keyPlayers[key].length - 1];
         this.keyPlayers[key].splice(this.keyPlayers[key].length - 1, 1);
         player.gain.gain.setValueAtTime(player.gain.gain.value, context.currentTime + 0.05);
@@ -82,9 +83,9 @@ export class KeyAudioPlayer {
         this.setRemoveTimeout(player, falloff * 1000 + 500);
     }
 
-    setRemoveTimeout(player: NotePlayer, timeout: number){
+    setRemoveTimeout(player: NotePlayer, timeout: number) {
         setTimeout(() => {
-            if(player.removed) return;
+            if (player.removed) return;
             player.gain.disconnect();
             player.source.disconnect();
             player.source.stop();

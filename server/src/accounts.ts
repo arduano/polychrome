@@ -4,6 +4,8 @@ import { User } from 'data/misc';
 
 let secret = 'temporary-jwt-secret'
 
+let guestPfpUrl = 'https://i.imgur.com/2ZipxzK.png'
+
 interface Token {
     id: string;
 }
@@ -27,6 +29,6 @@ function makeGuestAccount(name: string) {
     let u: User = {
         id,
         name,
-        pfp: 'https://i.imgur.com/2ZipxzK.png'
+        pfp: guestPfpUrl
     };
 }

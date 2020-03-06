@@ -49,13 +49,18 @@ const UserContainer = styled.div`
     margin: 5px;
 `;
 
-function Main(props: {}) {
+interface MainProps {
+    audioPlayer: KeyAudioPlayer;
+    midiHandler: MidiHandler;
+}
+
+function Main(props: MainProps) {
     const [keyboardState, setKeyboardState] = useState<PianoState | undefined>(undefined);
 
     useEffect(() => {
-        setKeyboardState(new PianoState(new KeyAudioPlayer(), new MidiHandler()));
+        setKeyboardState(new PianoState(props.audioPlayer, props.midiHandler));
     }, [])
-    
+
     return (
         <Container>
             <PianoContainer>
@@ -63,10 +68,10 @@ function Main(props: {}) {
             </PianoContainer>
             <UserBar>
                 <UserContainer>
-                    <User name={'Arduano'} pfp={'https://i.imgur.com/2ZipxzK.png'}/>
+                    <User name={'Arduano'} pfp={'https://i.imgur.com/2ZipxzK.png'} />
                 </UserContainer>
                 <UserContainer>
-                    <User name={'Kaydax'} pfp={'https://cdn.kaydax.xyz/Untitled.png'}/>
+                    <User name={'Kaydax'} pfp={'https://cdn.kaydax.xyz/Untitled.png'} />
                 </UserContainer>
             </UserBar>
         </Container>

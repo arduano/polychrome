@@ -38,9 +38,7 @@ export default class PianoState {
         this.player = player;
         this.midi = midi;
 
-        midi.getInputs().then(inputs => {
-            midi.listenTo(inputs[0], this)
-        })
+        midi.listenTo(midi.getInputs()[0], this)
 
         let blacki = 0;
         let whitei = 0;
@@ -140,11 +138,11 @@ export default class PianoState {
 
             let firstPressed = 0;
             for (; firstPressed < key.pressers.length; firstPressed++) {
-                if (key.pressers[firstPressed].fade == 1) break;
+                if (key.pressers[firstPressed].fade === 1) break;
             }
 
             let pressState = 0;
-            if (firstPressed == key.pressers.length) {
+            if (firstPressed === key.pressers.length) {
                 col.r = key.color.r;
                 col.g = key.color.g;
                 col.b = key.color.b;
