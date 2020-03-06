@@ -22,6 +22,7 @@ type KeyState = {
 
 const fadeTime = 0.3;
 const keyDesaturate = 80;
+let autoFadeTime = 7;
 
 export default class PianoState {
     keys: KeyState[] = []
@@ -91,7 +92,7 @@ export default class PianoState {
         let k = this.keys[key];
         if (!k) return;
 
-        for (let i = 0; i < k.pressers.length; i++) {
+        for (let i = k.pressers.length - 1; i >= 0; i--) {
             let p = k.pressers[i];
             if (p.agent === agent && p.pressed) {
                 p.unpressTime = Date.now();
@@ -111,9 +112,8 @@ export default class PianoState {
             col.b = key.color.b;
             for (let i = 0; i < key.pressers.length; i++) {
                 let p = key.pressers[i];
-                let autoFadeTime = 0.5;
                 if (!p.pressed) {
-                    let fade1 = 1 - ((time - p.pressTime!) / 1000) / fadeTime + autoFadeTime;
+                    let fade1 = 1 - ((time - p.pressTime!) / 1000 - autoFadeTime) / fadeTime;
                     let fade2 = 1 - (time - p.unpressTime!) / 1000 / fadeTime;
                     let fade = Math.min(Math.max(Math.min(fade1, fade2), 0), 1);
                     if (fade <= 0) {
@@ -125,7 +125,7 @@ export default class PianoState {
                     }
                 }
                 else {
-                    let fade = 1 - ((time - p.pressTime!) / 1000) / fadeTime + autoFadeTime;
+                    let fade = 1 - ((time - p.pressTime!) / 1000 - autoFadeTime) / fadeTime;
                     fade = Math.min(Math.max(fade, 0), 1);
                     if (fade <= 0) {
                         this.player.unpressKey(p.key, '');

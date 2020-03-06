@@ -59,7 +59,7 @@ function User(props: UserProps) {
     return (
         <UserContainer>
             <PfpContainer>
-                <Pfp style={{ backgroundImage: props.pfp }} />
+                <Pfp style={{ backgroundImage: `url("${props.pfp}")` }} />
             </PfpContainer>
             <Content>
                 <Username>

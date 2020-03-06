@@ -14,8 +14,6 @@ export class MidiHandler {
 
                 console.log('Inputs:', webmidi.inputs);
                 console.log('Outputs:', webmidi.outputs);
-
-                var input = webmidi.inputs[0];
             });
         });
 
@@ -31,9 +29,11 @@ export class MidiHandler {
         this.pianoState = pianoState;
         this.currentInput = device;
 
+        console.log(device);
+        
         device.addListener('noteon', 'all', this.noteOn);
         device.addListener('noteoff', 'all', this.noteOff);
-        device.addListener('reset', 'all', console.log);
+        device.addListener('noteon', 'all', console.log);
     }
 
     private noteOn(e: InputEventNoteon) {
