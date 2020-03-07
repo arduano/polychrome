@@ -15,3 +15,7 @@ class GlobalStore {
     @observable defaultRoom?: string;
     @observable volume: number = 1;
 }
+
+const store = new GlobalStore()
+
+export default store;

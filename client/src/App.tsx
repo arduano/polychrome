@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Main from './views/main/Main';
 import {
@@ -12,26 +12,33 @@ import { WebApi } from './web/restful';
 import { MainInfoReturn } from './data/misc';
 import { KeyAudioPlayer } from './data/audioHandler';
 import { MidiHandler } from './data/midiHandler';
+import store from './data/stores';
+import BPRApi from './web/api';
 
 function App() {
     const [mainInfo, setMainInfo] = useState<MainInfoReturn | null>(null);
-    const [audioPlayer, setAudioPlayer] = useState<KeyAudioPlayer | null | 'loading'>(null);
-    const [midiHandler, setMidiHandler] = useState<MidiHandler | null | 'loading'>(null);
+    const [audioPlayer, setAudioPlayer] = useState<KeyAudioPlayer | null>(null);
+    const [midiHandler, setMidiHandler] = useState<MidiHandler | null>(null);
+    const [api, setApi] = useState<BPRApi | null>(null);
     if (!mainInfo) WebApi.getMainInfo().then(setMainInfo);
 
-    if (!audioPlayer) {
-        KeyAudioPlayer.create().then(setAudioPlayer)
-        setAudioPlayer('loading');
-    }
-    if (!midiHandler) {
-        MidiHandler.create().then(setMidiHandler)
-        setMidiHandler('loading');
-    }
+    useEffect(() => {
+        MidiHandler.create().then(setMidiHandler);
+        KeyAudioPlayer.create().then(setAudioPlayer);
+        BPRApi.logInAsGuest('Arduano').then(api => {
+            store.user.guest = api.guest;
+            store.user.id = api.id;
+            store.user.pfp = api.pfp;
+            store.user.name = api.name;
+            store.token = api.token;
+            setApi(api);
+        });
+        console.log(api);
+    }, []);
 
     let loading =
-        audioPlayer === null || audioPlayer === 'loading' ||
-        midiHandler === null || midiHandler === 'loading' ||
-        !mainInfo;
+        audioPlayer === null || midiHandler === null ||
+        !mainInfo || !store.token || !api;
 
     return (
         <Router>
@@ -43,7 +50,7 @@ function App() {
                             <Redirect to={'/' + mainInfo!.defaultRoom} />
                         </Route>
                         <Route path='/:room' exact>
-                            <Main audioPlayer={audioPlayer as KeyAudioPlayer} midiHandler={midiHandler as MidiHandler} />
+                            <Main api={api!} audioPlayer={audioPlayer!} midiHandler={midiHandler!} />
                         </Route>
                     </Switch >
                 )}

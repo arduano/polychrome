@@ -41,7 +41,7 @@ export class MidiHandler {
 
         device.addListener('noteon', 'all', this.noteOn);
         device.addListener('noteoff', 'all', this.noteOff);
-        device.addListener('noteon', 'all', console.log);
+        //device.addListener('noteon', 'all', console.log);
     }
 
     private noteOn(e: InputEventNoteon) {

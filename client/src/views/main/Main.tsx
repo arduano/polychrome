@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import Piano from '../../parts/piano/piano';
 import styled from 'styled-components';
 import User from '../../parts/user/user';
+import { User as UserType } from '../../data/misc';
 import PianoState from '../../data/pianoState';
 import { KeyAudioPlayer } from '../../data/audioHandler';
 import { MidiHandler } from '../../data/midiHandler';
 import Toolbar from '../../parts/toolbar/toolbar';
+import socketio from 'socket.io-client';
+import BPRApi, { JoinRoomData } from '../../web/api';
+import { withRouter, RouteProps, RouteComponentProps } from 'react-router';
 
 const barHeight = 80;
 const iconSize = 60;
@@ -61,13 +65,28 @@ const ToolbarContainer = styled.div`
 interface MainProps {
     audioPlayer: KeyAudioPlayer;
     midiHandler: MidiHandler;
+    api: BPRApi;
 }
 
-function Main(props: MainProps) {
+function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) {
     const [keyboardState, setKeyboardState] = useState<PianoState | undefined>(undefined);
+    const [roomUsers, setRoomUsers] = useState<UserType[]>([]);
+
+    let api = props.api;
 
     useEffect(() => {
         setKeyboardState(new PianoState(props.audioPlayer, props.midiHandler));
+
+        api.joinRoom(props.match.params.room).then((data: JoinRoomData) => {
+            api.on('user join', (user) => {
+                setRoomUsers(u => u.concat([user]));
+            })
+            api.on('user leave', (user) => {
+                let i = roomUsers.findIndex(u => u.id == user.id);
+                setRoomUsers(u => u.filter(_u => _u.id !== user.id));
+            })
+            setRoomUsers(data.users);
+        });
     }, [])
 
     return (
@@ -76,12 +95,11 @@ function Main(props: MainProps) {
                 <Toolbar btnTitle={'Test'} />
             </ToolbarContainer>
             <UserBar>
-                <UserContainer>
-                    <User name={'Arduano'} pfp={'https://i.imgur.com/2ZipxzK.png'} />
-                </UserContainer>
-                <UserContainer>
-                    <User name={'Kaydax'} pfp={'https://cdn.kaydax.xyz/Untitled.png'} />
-                </UserContainer>
+                {roomUsers.map((user, i) => (
+                    <UserContainer key={i}>
+                        <User name={user.name} pfp={user.pfp} />
+                    </UserContainer>
+                ))}
             </UserBar>
             <PianoContainer>
                 {keyboardState && <Piano keyboard={keyboardState} />}
@@ -90,4 +108,4 @@ function Main(props: MainProps) {
     )
 }
 
-export default Main;
+export default withRouter(Main);
