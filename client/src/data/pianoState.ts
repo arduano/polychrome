@@ -38,7 +38,7 @@ export default class PianoState {
         this.player = player;
         this.midi = midi;
 
-        midi.listenTo(midi.getInputs()[0], this)
+        //midi.listenTo(midi.getInputs()[0], this)
 
         let blacki = 0;
         let whitei = 0;

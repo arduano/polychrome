@@ -1,6 +1,6 @@
 import axios from "axios";
 import socketio from 'socket.io-client';
-import { User } from "../data/misc";
+import { User, BatchEventData } from "../data/misc";
 import events from 'events';
 
 let baseURL = 'http://localhost:8080';
@@ -32,23 +32,19 @@ class BPRApi extends events.EventEmitter {
         super();
         this._data = data;
 
-        this.io.on('user joined', (user: User) => {
-            this.emit('user join', user);
-        })
-
-        this.io.on('user left', (user: User) => {
-            this.emit('user leave', user);
-        })
+        this._initWebsocket();
     }
 
     private _data: ClientData;
+
+    private eventQueue: EventData[];
 
     get guest() { return this._data.guest; }
     get token() { return this._data.token; }
     get id() { return this._data.id; }
     get pfp() { return this._data.pfp; }
     get name() { return this._data.name; }
-    
+
     private get io() { return this._data.socket; }
 
     static async logInAsGuest(name: string) {
@@ -83,10 +79,22 @@ class BPRApi extends events.EventEmitter {
     }
 
     private async _initWebsocket() {
+        this.io.on('user joined', (user: User) => {
+            this.emit('user join', user);
+        })
+
+        this.io.on('user left', (user: User) => {
+            this.emit('user leave', user);
+        })
+
 
     }
 
-    async joinRoom(name: string){
+    private processDataPacket(data: BatchEventData) {
+
+    }
+
+    async joinRoom(name: string) {
         return new Promise<JoinRoomData>(res => this.io.emit('join room', name, res));
     }
 }

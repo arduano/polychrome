@@ -17,4 +17,24 @@ export interface Room {
     owner: string;
 }
 
+interface EventData {
+    timestamp: number;
+    event: string;
+    data: any;
+}
+
+export interface BatchEventData {
+    data: EventData;
+    reduceLatency: boolean;
+}
+
+export interface SendBatchEventData extends BatchEventData {
+}
+
+export interface RecieveBatchEventData extends BatchEventData {
+    startTime: number;
+    endTime: number;
+    user: string;
+}
+
 export type MainInfoReturn = { defaultRoom: string }
