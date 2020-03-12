@@ -1,6 +1,6 @@
 import axios from "axios";
 import socketio from 'socket.io-client';
-import { User, BatchEventData } from "../data/misc";
+import { User, BatchEventData, EventData, RecieveBatchEventData } from "../data/misc";
 import events from 'events';
 
 let baseURL = 'http://localhost:8080';
@@ -36,8 +36,6 @@ class BPRApi extends events.EventEmitter {
     }
 
     private _data: ClientData;
-
-    private eventQueue: EventData[];
 
     get guest() { return this._data.guest; }
     get token() { return this._data.token; }
@@ -90,8 +88,26 @@ class BPRApi extends events.EventEmitter {
 
     }
 
-    private processDataPacket(data: BatchEventData) {
+    private processDataPacket(data: RecieveBatchEventData) {
+        let delay = Date.now() - data.recordStartTime;
+        data.data.forEach(event => {
+            setTimeout(() => this.processEvent(event, data.user), event.timestamp + delay);
+        });
+    }
 
+    private processEvent(event: EventData, user: string) {
+        if (event.event == 'note-on') {
+            let data = event.data;
+            this.emit('note on', user, data.key, data.velocity);
+        }
+        else if (event.event == 'note-off') {
+            let data = event.data;
+            this.emit('note off', user, data.key);
+        }
+    }
+
+    pressKey(key: number, velocity: number){
+        
     }
 
     async joinRoom(name: string) {

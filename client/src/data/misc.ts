@@ -17,14 +17,30 @@ export interface Room {
     owner: string;
 }
 
-interface EventData {
+interface EventBase {
     timestamp: number;
-    event: string;
-    data: any;
 }
 
+export interface NoteOnEvent extends EventBase {
+    event: 'note-on';
+    data: {
+        key: number;
+        velocity: number;
+    };
+}
+
+export interface NoteOffEvent extends EventBase {
+    event: 'note-off';
+    data: {
+        key: number;
+    };
+}
+
+export type EventData = NoteOnEvent | NoteOffEvent;
+
 export interface BatchEventData {
-    data: EventData;
+    data: EventData[];
+    recordStartTime: number;
     reduceLatency: boolean;
 }
 
