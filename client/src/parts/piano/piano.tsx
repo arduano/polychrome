@@ -189,8 +189,8 @@ function Piano(props: { keyboard: PianoState }) {
         if (keyNumber < first) keyNumber = first;
         if (keyNumber >= last) keyNumber = last - 1;
 
-        if (lastKeyClicked != -1) keyboard.unpressKey(lastKeyClicked, '');
-        keyboard.pressKey(keyNumber, 1, '', { r: 255, g: 0, b: 0 });
+        if (lastKeyClicked != -1) keyboard.unpressKeyLocal(lastKeyClicked);
+        keyboard.pressKeyLocal(keyNumber, 1);
         lastKeyClicked = keyNumber;
 
         //setTimeout(() => keyboard.unpressKey(keyNumber, ''), 1000);
@@ -198,7 +198,7 @@ function Piano(props: { keyboard: PianoState }) {
 
     function mouseUp() {
         if (lastKeyClicked === -1) return;
-        keyboard.unpressKey(lastKeyClicked, '')
+        keyboard.unpressKeyLocal(lastKeyClicked)
         lastKeyClicked = -1;
     }
 

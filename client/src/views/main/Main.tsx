@@ -75,7 +75,8 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
     let api = props.api;
 
     useEffect(() => {
-        setKeyboardState(new PianoState(props.audioPlayer, props.midiHandler));
+        let _keyboardState = new PianoState(props.audioPlayer, props.midiHandler, props.api);
+        setKeyboardState(_keyboardState);
 
         api.joinRoom(props.match.params.room).then((data: JoinRoomData) => {
             api.on('user join', (user) => {
@@ -84,6 +85,12 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
             api.on('user leave', (user) => {
                 let i = roomUsers.findIndex(u => u.id == user.id);
                 setRoomUsers(u => u.filter(_u => _u.id !== user.id));
+            })
+            api.on('note on', (user, key, velocity) => {
+                _keyboardState!.pressKeyWeb(key, velocity, user, { r: 0, g: 255, b: 0 });
+            })
+            api.on('note off', (user, key) => {
+                _keyboardState!.unpressKeyWeb(key, user);
             })
             setRoomUsers(data.users);
         });

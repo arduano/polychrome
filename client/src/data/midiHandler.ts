@@ -6,6 +6,10 @@ export class MidiHandler {
 
     }
 
+    maxNps = 500;
+    rateFactor: number = 0;
+    lastNoteTime: number = 0;
+
     static async create() {
         let mh = new MidiHandler();
 
@@ -45,11 +49,16 @@ export class MidiHandler {
     }
 
     private noteOn(e: InputEventNoteon) {
-        this.pianoState?.pressKey(e.note.number, e.velocity, '', { r: 0, g: 255, b: 0 })
+        this.rateFactor -= (Date.now() - this.lastNoteTime) / 1000 * this.maxNps;
+        this.lastNoteTime = Date.now();
+        if(this.rateFactor < 0) this.rateFactor = 0;
+        if(this.rateFactor > e.velocity * this.maxNps) return;
+        this.rateFactor++;
+        this.pianoState?.pressKeyLocal(e.note.number, e.velocity)
     }
 
     private noteOff(e: InputEventNoteoff) {
-        this.pianoState?.unpressKey(e.note.number, '')
+        this.pianoState?.unpressKeyLocal(e.note.number)
     }
 
     unlink() {

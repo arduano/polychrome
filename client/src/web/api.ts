@@ -1,6 +1,6 @@
 import axios from "axios";
 import socketio from 'socket.io-client';
-import { User, BatchEventData, EventData, RecieveBatchEventData } from "../data/misc";
+import { User, BatchEventData, EventData, RecieveBatchEventData, SendBatchEventData } from "../data/misc";
 import events from 'events';
 
 let baseURL = 'http://localhost:8080';
@@ -17,6 +17,16 @@ type ClientData = {
 export interface JoinRoomData {
     users: User[];
     name: string;
+}
+
+type UserEventData = {
+    user: string;
+    data: EventData;
+}
+
+async function delay(time: number){
+    if(time <= 0) return;
+    await new Promise(res => setTimeout(res, time));
 }
 
 declare interface BPRApi { // Event declarations
@@ -36,6 +46,13 @@ class BPRApi extends events.EventEmitter {
     }
 
     private _data: ClientData;
+
+    private noteDataBuffer: EventData[] = [];
+    private noteDataRecordStart: number = Date.now();
+
+    private processorIteration: number = 0;
+
+    private packetQueue: UserEventData[] = [];
 
     get guest() { return this._data.guest; }
     get token() { return this._data.token; }
@@ -85,14 +102,59 @@ class BPRApi extends events.EventEmitter {
             this.emit('user leave', user);
         })
 
+        this.io.on('data', (data: RecieveBatchEventData) => {
+            this.processDataPacket(data);
+        })
 
+        this.noteSendLoop();
     }
 
-    private processDataPacket(data: RecieveBatchEventData) {
-        let delay = Date.now() - data.recordStartTime;
-        data.data.forEach(event => {
-            setTimeout(() => this.processEvent(event, data.user), event.timestamp + delay);
+    private async noteSendLoop() {
+        while (!this.io.disconnected) {
+            if (this.noteDataBuffer.length != 0) {
+                let data: SendBatchEventData = {
+                    recordStartTime: this.noteDataRecordStart,
+                    reduceLatency: true,
+                    data: this.noteDataBuffer
+                }
+                this.io.emit('data', data);
+            }
+
+            this.noteDataBuffer = [];
+            this.noteDataRecordStart = Date.now();
+            await delay(100);
+        }
+    }
+
+    private async eventProcessor(){
+        this.processorIteration++;
+        let iteration = this.processorIteration;
+        while(this.packetQueue.length > 0){
+            let packet = this.packetQueue[0];
+            await delay(packet.data.timestamp - Date.now());
+            if(this.processorIteration !== iteration) return;
+            this.packetQueue.splice(0, 1);
+            this.processEvent(packet.data, packet.user);
+        }
+    }
+
+    private async processDataPacket(data: RecieveBatchEventData) {
+        let offset = Date.now() - data.recordStartTime;
+        let packets = data.data;
+        data.data.forEach(packet => {
+            packet.timestamp += offset;
+            let userPacket = {
+                user: data.user,
+                data: packet
+            }
+            if(this.packetQueue.length === 0 || this.packetQueue[this.packetQueue.length - 1].data.timestamp >= packet.timestamp){
+                this.packetQueue.push(userPacket);
+            }
+            else{
+                this.packetQueue.push(userPacket);
+            }
         });
+        this.eventProcessor();
     }
 
     private processEvent(event: EventData, user: string) {
@@ -106,8 +168,29 @@ class BPRApi extends events.EventEmitter {
         }
     }
 
-    pressKey(key: number, velocity: number){
-        
+    pressKey(key: number, velocity: number) {
+        this.noteDataBuffer.push(
+            {
+                event: "note-on",
+                timestamp: Date.now(),
+                data: {
+                    key: key,
+                    velocity: velocity
+                }
+            }
+        );
+    }
+
+    unpressKey(key: number) {
+        this.noteDataBuffer.push(
+            {
+                event: "note-off",
+                timestamp: Date.now(),
+                data: {
+                    key: key
+                }
+            }
+        );
     }
 
     async joinRoom(name: string) {

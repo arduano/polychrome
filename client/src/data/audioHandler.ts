@@ -76,6 +76,8 @@ export class KeyAudioPlayer {
         this.keyPlayers[key].push(player);
 
         this.setRemoveTimeout(player, buffer.duration * 1000);
+
+        //console.log(context.currentTime)
     }
 
     unpressKey(key: number, instrument: string) {

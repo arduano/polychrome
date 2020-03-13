@@ -1,7 +1,7 @@
 import http from 'http';
 import socketio from 'socket.io';
 import * as accounts from './accounts';
-import { User } from '../../client/src/data/misc';
+import { User, SendBatchEventData, RecieveBatchEventData } from '../../client/src/data/misc';
 import { JoinRoomData } from '../../client/src/web/api';
 import { guestPfpUrl } from './users';
 
@@ -59,11 +59,11 @@ export default class SocketRooms {
         const emitToOthers = (event: string | symbol, ...args: any[]) => {
             if (room === null) return;
             let users = this.rooms[room].users;
-            console.log('sending', event, ...args)
-            console.log('count', users.length)
+            //console.log('sending', event, ...args)
+            //console.log('count', users.length)
             users.forEach(u => {
                 if (u.id !== roomUser.id) {
-                    console.log('sent', u.id)
+                    //console.log('sent', u.id)
                     u.socket.emit(event, ...args);
                 }
             })
@@ -113,6 +113,18 @@ export default class SocketRooms {
                 users: userData
             }
             callback(roomData);
+        })
+
+        socket.on('data', async (data: SendBatchEventData) => {
+            let data2: RecieveBatchEventData = {
+                data: data.data,
+                endTime: 0,
+                startTime: 0,
+                recordStartTime: data.recordStartTime,
+                reduceLatency: data.reduceLatency,
+                user: roomUser.id
+            }
+            emitToOthers('data', data2);
         })
     }
 };

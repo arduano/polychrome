@@ -1,6 +1,7 @@
 import { Color } from "./misc";
 import { KeyAudioPlayer } from "./audioHandler";
 import { MidiHandler } from "./midiHandler";
+import BPRApi from "../web/api";
 
 type KeyPresser = {
     color: Color;
@@ -33,12 +34,14 @@ export default class PianoState {
 
     player: KeyAudioPlayer;
     midi: MidiHandler;
+    api: BPRApi;
 
-    constructor(player: KeyAudioPlayer, midi: MidiHandler) {
+    constructor(player: KeyAudioPlayer, midi: MidiHandler, api: BPRApi) {
         this.player = player;
         this.midi = midi;
+        this.api = api;
 
-        //midi.listenTo(midi.getInputs()[0], this)
+        midi.listenTo(midi.getInputs()[0], this)
 
         let blacki = 0;
         let whitei = 0;
@@ -69,7 +72,7 @@ export default class PianoState {
         }
     }
 
-    pressKey(key: number, velocity: number, agent: string, color: Color) {
+    pressKeyWeb(key: number, velocity: number, agent: string, color: Color) {
         let k = this.keys[key];
         if (!k) return;
 
@@ -86,7 +89,7 @@ export default class PianoState {
         })
     }
 
-    unpressKey(key: number, agent: string) {
+    unpressKeyWeb(key: number, agent: string) {
         let k = this.keys[key];
         if (!k) return;
 
@@ -99,6 +102,16 @@ export default class PianoState {
                 break;
             }
         }
+    }
+
+    pressKeyLocal(key: number, velocity: number) {
+        this.api.pressKey(key, velocity);
+        this.pressKeyWeb(key, velocity, this.api.id, { r: 155, g: 0, b: 0 });
+    }
+
+    unpressKeyLocal(key: number) {
+        this.api.unpressKey(key);
+        this.unpressKeyWeb(key, this.api.id);
     }
 
     updateAllKeys() {
