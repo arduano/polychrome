@@ -72,7 +72,7 @@ interface MainProps {
 function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) {
     const [keyboardState, setKeyboardState] = useState<PianoState | undefined>(undefined);
     const [roomUsers, setRoomUsers] = useState<UserType[]>([]);
-    const [volume, setVol] = useState({ x: 100 });
+    const [volume, setVol] = useState<number>(100);
 
     let api = props.api;
 
@@ -111,7 +111,10 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
                 {keyboardState && <Piano keyboard={keyboardState} />}
             </PianoContainer>
             <ToolbarContainer>
-                <Slider axis="x" x={volume.x} onChange={({ x }) => setVol(volume => ({ ...volume, x }))}/>
+                <Slider axis="x" x={volume} onChange={e => {
+                    setVol(e.x)
+                    props.audioPlayer.setVolume(Math.pow(e.x / 100, 2));
+                }} />
             </ToolbarContainer>
         </Container>
     )

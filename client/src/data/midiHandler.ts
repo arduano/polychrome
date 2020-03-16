@@ -50,6 +50,7 @@ export class MidiHandler {
     }
 
     private noteOn(e: InputEventNoteon) {
+        if(e.velocity <= 6 / 127) return;
         this.rateFactor -= (Date.now() - this.lastNoteTime) / 1000 * this.maxNps;
         this.lastNoteTime = Date.now();
         if(this.rateFactor < 0) this.rateFactor = 0;

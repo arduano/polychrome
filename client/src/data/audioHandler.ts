@@ -5,7 +5,7 @@ import { WebApi } from "../web/restful";
 var context = new AudioContext();
 
 let falloff = 0.3;
-let constantVolumeScale = 0.2;
+let constantVolumeScale = 0.3;
 
 type NotePlayer = {
     source: AudioBufferSourceNode;
@@ -28,6 +28,9 @@ export class KeyAudioPlayer {
     audioNoteBuffers: AudioBuffer[] = [];
 
     keyPlayers: NotePlayer[][] = [];
+
+    globalGain: number = 1;
+    mainGain?: GainNode;
 
     private constructor() {
     }
@@ -55,14 +58,23 @@ export class KeyAudioPlayer {
 
         ap.audioNoteBuffers = await Promise.all(bufferWaiters);
 
+        ap.mainGain = context.createGain();
+        ap.mainGain.connect(context.destination);
+
         return ap;
+    }
+
+    setVolume(vol: number){
+        if(vol < 0.000001) vol = 0.000001;
+        this.globalGain = vol;
+        this.mainGain!.gain.value = vol;
     }
 
     pressKey(key: number, velocity: number, instrument: string) {
         var source = context.createBufferSource()
         var gain = context.createGain();
         source.connect(gain);
-        gain.connect(context.destination);
+        gain.connect(this.mainGain!);
         let buffer = this.audioNoteBuffers[key];
         source.buffer = buffer;
         gain.gain.value = Math.pow(velocity, 2) * constantVolumeScale;
