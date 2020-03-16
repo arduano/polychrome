@@ -7,6 +7,7 @@ import PianoState from '../../data/pianoState';
 import { KeyAudioPlayer } from '../../data/audioHandler';
 import { MidiHandler } from '../../data/midiHandler';
 import Toolbar from '../../parts/toolbar/toolbar';
+import Slider from 'react-input-slider';
 import socketio from 'socket.io-client';
 import BPRApi, { JoinRoomData } from '../../web/api';
 import { withRouter, RouteProps, RouteComponentProps } from 'react-router';
@@ -71,6 +72,7 @@ interface MainProps {
 function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) {
     const [keyboardState, setKeyboardState] = useState<PianoState | undefined>(undefined);
     const [roomUsers, setRoomUsers] = useState<UserType[]>([]);
+    const [volume, setVol] = useState({ x: 100 });
 
     let api = props.api;
 
@@ -98,9 +100,6 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
 
     return (
         <Container>
-            <ToolbarContainer>
-                <Toolbar btnTitle={'Test'} />
-            </ToolbarContainer>
             <UserBar>
                 {roomUsers.map((user, i) => (
                     <UserContainer key={i}>
@@ -111,6 +110,9 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
             <PianoContainer>
                 {keyboardState && <Piano keyboard={keyboardState} />}
             </PianoContainer>
+            <ToolbarContainer>
+                <Slider axis="x" x={volume.x} onChange={({ x }) => setVol(volume => ({ ...volume, x }))}/>
+            </ToolbarContainer>
         </Container>
     )
 }

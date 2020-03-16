@@ -1,4 +1,4 @@
-import { default as webmidi, Input, InputEventNoteon, InputEventNoteoff } from "webmidi";
+import { default as webmidi, Input, InputEventNoteon, InputEventNoteoff, InputEventChannelmode } from "webmidi";
 import PianoState from "./pianoState";
 
 export class MidiHandler {
@@ -15,6 +15,7 @@ export class MidiHandler {
 
         mh.noteOn = mh.noteOn.bind(mh);
         mh.noteOff = mh.noteOff.bind(mh);
+        mh.channelMode = mh.channelMode.bind(mh);
 
         await new Promise((ret, rej) => {
             webmidi.enable(function (err) {
@@ -25,7 +26,7 @@ export class MidiHandler {
 
                 console.log('Inputs:', webmidi.inputs);
                 console.log('Outputs:', webmidi.outputs);
-            });
+            }, true);
         });
         return mh;
     }
@@ -45,7 +46,7 @@ export class MidiHandler {
 
         device.addListener('noteon', 'all', this.noteOn);
         device.addListener('noteoff', 'all', this.noteOff);
-        //device.addListener('noteon', 'all', console.log);
+        device.addListener('channelmode', 'all', this.channelMode);
     }
 
     private noteOn(e: InputEventNoteon) {
@@ -59,6 +60,17 @@ export class MidiHandler {
 
     private noteOff(e: InputEventNoteoff) {
         this.pianoState?.unpressKeyLocal(e.note.number)
+    }
+
+    private channelMode(e: InputEventChannelmode) {
+        if(e.controller.name == "allsoundoff")
+        {
+            console.log("allsoundoff");
+            for(var i = 0; i < 128; i++) 
+            {
+                this.pianoState?.unpressKeyLocal(i);
+            }
+        }
     }
 
     unlink() {
