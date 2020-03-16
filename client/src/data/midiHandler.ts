@@ -51,6 +51,7 @@ export class MidiHandler {
 
     private noteOn(e: InputEventNoteon) {
         if(e.velocity <= 6 / 127) return;
+        if(e.channel == 10) return;
         this.rateFactor -= (Date.now() - this.lastNoteTime) / 1000 * this.maxNps;
         this.lastNoteTime = Date.now();
         if(this.rateFactor < 0) this.rateFactor = 0;
@@ -60,6 +61,7 @@ export class MidiHandler {
     }
 
     private noteOff(e: InputEventNoteoff) {
+        if(e.channel == 10) return;
         this.pianoState?.unpressKeyLocal(e.note.number)
     }
 
