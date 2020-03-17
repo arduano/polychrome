@@ -24,8 +24,8 @@ type UserEventData = {
     data: EventData;
 }
 
-async function delay(time: number){
-    if(time <= 0) return;
+async function delay(time: number) {
+    if (time <= 0) return;
     await new Promise(res => setTimeout(res, time));
 }
 
@@ -34,7 +34,7 @@ declare interface BPRApi { // Event declarations
     on(event: 'user leave', listener: (user: User) => void): this;
     on(event: 'note on', listener: (user: string, key: number, velocity: number) => void): this;
     on(event: 'note off', listener: (user: string, key: number) => void): this;
-    //on(event: string, listener: Function): this;
+    on(event: 'error', listener: (error: string) => void): this;
 }
 
 class BPRApi extends events.EventEmitter {
@@ -81,7 +81,6 @@ class BPRApi extends events.EventEmitter {
                 socket.close();
                 rej(new Error('Login Failed'));
             });
-            socket.on('error', console.error.bind(console));
         });
 
         let api = new BPRApi({
@@ -89,6 +88,11 @@ class BPRApi extends events.EventEmitter {
             socket,
             guest: true,
         })
+
+        socket.on('error', (error: string) => {
+            api.emit('error', error);
+            console.error(error);
+        });
 
         return api;
     }
@@ -114,7 +118,6 @@ class BPRApi extends events.EventEmitter {
             if (this.noteDataBuffer.length != 0) {
                 let data: SendBatchEventData = {
                     recordStartTime: this.noteDataRecordStart,
-                    reduceLatency: true,
                     data: this.noteDataBuffer
                 }
                 this.io.emit('data', data);
@@ -126,13 +129,13 @@ class BPRApi extends events.EventEmitter {
         }
     }
 
-    private async eventProcessor(){
+    private async eventProcessor() {
         this.processorIteration++;
         let iteration = this.processorIteration;
-        while(this.packetQueue.length > 0){
+        while (this.packetQueue.length > 0) {
             let packet = this.packetQueue[0];
             await delay(packet.data.timestamp - Date.now());
-            if(this.processorIteration !== iteration) return;
+            if (this.processorIteration !== iteration) return;
             this.packetQueue.splice(0, 1);
             this.processEvent(packet.data, packet.user);
         }
@@ -147,10 +150,10 @@ class BPRApi extends events.EventEmitter {
                 user: data.user,
                 data: packet
             }
-            if(this.packetQueue.length === 0 || this.packetQueue[this.packetQueue.length - 1].data.timestamp >= packet.timestamp){
+            if (this.packetQueue.length === 0 || this.packetQueue[this.packetQueue.length - 1].data.timestamp >= packet.timestamp) {
                 this.packetQueue.push(userPacket);
             }
-            else{
+            else {
                 this.packetQueue.push(userPacket);
             }
         });

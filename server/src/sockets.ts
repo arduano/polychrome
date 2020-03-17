@@ -56,6 +56,10 @@ export default class SocketRooms {
             id: data.id
         }
 
+        let packetRate = 0;
+        let lastSendTime = 0;
+        let maxPacketRate = 2000;
+
         const emitToOthers = (event: string | symbol, ...args: any[]) => {
             if (room === null) return;
             let users = this.rooms[room].users;
@@ -116,15 +120,41 @@ export default class SocketRooms {
         })
 
         socket.on('data', async (data: SendBatchEventData) => {
-            let data2: RecieveBatchEventData = {
-                data: data.data,
-                endTime: 0,
-                startTime: 0,
-                recordStartTime: data.recordStartTime,
-                reduceLatency: data.reduceLatency,
-                user: roomUser.id
+            let process = (): string | undefined => {
+                if(data == null) return 'Data batch is null';
+                if(data.data == null) return 'Data batch is null';
+                if(data.recordStartTime == null) return '"recordStartTime" missing';
+                if(data.data.length === 0) return 'Zero size data batch';
+            
+                packetRate -= (Date.now() - lastSendTime) / 1000 * maxPacketRate;
+                lastSendTime = Date.now();
+                if (packetRate < 0) packetRate = 0;
+                if (packetRate > maxPacketRate) return 'Hitting event rate limit';
+                packetRate += data.data.length;
+    
+                let time = data.recordStartTime;
+                for(let i = 0; i < data.data.length; i++){
+                    let p = data.data[0];
+                    if(p.event == null) return 'Event type missing in event packet';
+                    if(p.timestamp == null) return 'Timestamp missing on event packet';
+                    if(time > p.timestamp) return 'Events must be in chronological time order';
+                    time = p.timestamp;
+                }
+
+                if(time - data.recordStartTime > 10000) return 'Maximum event batch time range allowed is 1 second';
+    
+                let data2: RecieveBatchEventData = {
+                    data: data.data,
+                    endTime: time,
+                    startTime: data.data[0].timestamp,
+                    recordStartTime: data.recordStartTime,
+                    user: roomUser.id
+                }
+                emitToOthers('data', data2);
             }
-            emitToOthers('data', data2);
+
+            let error = process();
+            if(error) emitToOthers('error', 'Event batch rejected: ' + error);
         })
     }
 };

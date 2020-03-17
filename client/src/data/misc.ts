@@ -41,7 +41,6 @@ export type EventData = NoteOnEvent | NoteOffEvent;
 export interface BatchEventData {
     data: EventData[];
     recordStartTime: number;
-    reduceLatency: boolean;
 }
 
 export interface SendBatchEventData extends BatchEventData {
