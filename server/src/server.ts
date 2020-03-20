@@ -57,7 +57,8 @@ function getAudioPath(num: number) {
 app.get('/api/audio/:key', (req, res) => {
     let key = req.params.key;
     let buffer = fs.readFileSync(getAudioPath(parseInt(key)))
-    res.writeHead(200, 'SUCCESS', { 'content-type': 'audio/ogg' }).end(buffer)
+    res.writeHead(200, 'SUCCESS', { 'content-type': 'audio/ogg' })
+    res.end(buffer);
 })
 
 app.get('/api/info', (req, res) => {
