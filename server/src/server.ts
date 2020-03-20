@@ -13,6 +13,8 @@ const app = express()
 const server = require('http').createServer(app);
 const socket = new Socket(server);
 
+const port = process.env.PORT || 8080;
+
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
 app.use(function (req, res, next) {
@@ -41,8 +43,6 @@ let checkAuth = (req: AuthReq, res: express.Response, next) => {
     }
     next();
 }
-
-const port = 8080
 
 let baseUrl = '/api'
 

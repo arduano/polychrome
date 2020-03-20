@@ -8,6 +8,7 @@
     "client": "cd ./client && yarn start",
     "server": "cd ./server && yarn start",
     "start": "cd build && node server.js",
-    "build": "rm -rf build && cd server && yarn build && cd ../client && yarn build && cd .. && cp server/package.json build/package.json && cd build && npm install"
+    "install": "cd ./client && yarn && cd ../server && yarn",
+    "build": "yarn install && rm -rf build && cd server && yarn build && cd ../client && yarn build && cd .. && cp server/package.json build/package.json && cd build && npm install"
   }
 }
