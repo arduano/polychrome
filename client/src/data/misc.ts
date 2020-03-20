@@ -51,5 +51,3 @@ export interface RecieveBatchEventData extends BatchEventData {
     endTime: number;
     user: string;
 }
-
-export type MainInfoReturn = { defaultRoom: string }

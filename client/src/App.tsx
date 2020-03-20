@@ -8,19 +8,15 @@ import {
     Redirect,
     Link
 } from "react-router-dom";
-import { WebApi } from './web/restful';
-import { MainInfoReturn } from './data/misc';
 import { KeyAudioPlayer } from './data/audioHandler';
 import { MidiHandler } from './data/midiHandler';
 import store from './data/stores';
 import BPRApi from './web/api';
 
 function App() {
-    const [mainInfo, setMainInfo] = useState<MainInfoReturn | null>(null);
     const [audioPlayer, setAudioPlayer] = useState<KeyAudioPlayer | null>(null);
     const [midiHandler, setMidiHandler] = useState<MidiHandler | null>(null);
     const [api, setApi] = useState<BPRApi | null>(null);
-    if (!mainInfo) WebApi.getMainInfo().then(setMainInfo);
 
     useEffect(() => {
         MidiHandler.create().then(setMidiHandler);
@@ -38,7 +34,7 @@ function App() {
 
     let loading =
         audioPlayer === null || midiHandler === null ||
-        !mainInfo || !store.token || !api;
+        !store.token || !api;
 
     return (
         <Router>
@@ -47,7 +43,7 @@ function App() {
             ) : (
                     <Switch>
                         <Route path='/' exact>
-                            <Redirect to={'/' + mainInfo!.defaultRoom} />
+                            <Redirect to={'/' + api!.defaultRoom} />
                         </Route>
                         <Route path='/:room' exact>
                             <Main api={api!} audioPlayer={audioPlayer!} midiHandler={midiHandler!} />

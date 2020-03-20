@@ -60,6 +60,8 @@ class BPRApi extends events.EventEmitter {
     get pfp() { return this._data.pfp; }
     get name() { return this._data.name; }
 
+    get defaultRoom() { return 'main'; }
+
     private get io() { return this._data.socket; }
 
     static async logInAsGuest(name: string) {
