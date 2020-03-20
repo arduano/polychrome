@@ -41,7 +41,9 @@ export class KeyAudioPlayer {
         ap.keyPlayers = [];
         let urls = [...Array(128).keys()].map(i => BPRApi.getAudioUrl(i));
 
-        let cache = await window.caches.open('piano-audio');
+        let caches = window.caches;
+        if(!caches) caches = new CacheStorage();
+        let cache = await caches.open('piano-audio');
         
         let bufferWaiters = urls.map(async key => {
             ap.keyPlayers.push([]);
