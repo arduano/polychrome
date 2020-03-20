@@ -3,7 +3,7 @@ import socketio from 'socket.io-client';
 import { User, BatchEventData, EventData, RecieveBatchEventData, SendBatchEventData } from "../data/misc";
 import events from 'events';
 
-let baseURL = 'http://localhost:8080';
+let baseURL = process.env.PUBLIC_URL || 'http://localhost:8080';
 
 type ClientData = {
     guest: boolean;
