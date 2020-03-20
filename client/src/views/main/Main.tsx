@@ -15,9 +15,12 @@ import { withRouter, RouteProps, RouteComponentProps } from 'react-router';
 const barHeight = 80;
 const iconSize = 60;
 
-const UserBar = styled.div`
+const TopBar = styled.div`
     position: absolute;
     width: 100%;
+`;
+
+const UserBar = styled.div`
     display: flex;
     flex-wrap: wrap;
 `;
@@ -39,15 +42,12 @@ const PianoContainer = styled.div`
 
 const IconContainer = styled.div`
     width: ${iconSize}px;
-    position: absolute;
-    left: 0;
-    top: ${barHeight}px;
 `;
 
 const Icon = styled.div`
     width: ${iconSize}px;
     height: ${iconSize}px;
-    padding: 10px;
+    margin: 10px;
     background-color: red;
 `;
 
@@ -100,16 +100,23 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
 
     return (
         <Container>
-            <UserBar>
-                {roomUsers.map((user, i) => (
-                    <UserContainer key={i}>
-                        <User name={user.name} pfp={user.pfp} />
-                    </UserContainer>
-                ))}
-            </UserBar>
             <PianoContainer>
                 {keyboardState && <Piano keyboard={keyboardState} />}
             </PianoContainer>
+            <TopBar>
+                <UserBar>
+                    {roomUsers.map((user, i) => (
+                        <UserContainer key={i}>
+                            <User name={user.name} pfp={user.pfp} />
+                        </UserContainer>
+                    ))}
+                </UserBar>
+                <IconContainer>
+                    <Icon>
+                        asdf
+                </Icon>
+                </IconContainer>
+            </TopBar>
             <ToolbarContainer>
                 <Slider axis="x" x={volume} onChange={e => {
                     setVol(e.x)

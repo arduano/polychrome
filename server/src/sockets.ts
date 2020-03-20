@@ -2,8 +2,12 @@ import http from 'http';
 import socketio from 'socket.io';
 import * as accounts from './accounts';
 import { User, SendBatchEventData, RecieveBatchEventData } from '../../client/src/data/misc';
-import { JoinRoomData } from '../../client/src/web/api';
 import { guestPfpUrl } from './users';
+
+export interface JoinRoomData {
+    users: User[];
+    name: string;
+}
 
 type RoomUser = {
     id: string;

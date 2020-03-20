@@ -6,6 +6,7 @@ import http from 'http';
 import socketio from 'socket.io';
 import Socket from './sockets';
 import * as accounts from './accounts';
+import path from 'path';
 
 const app = express()
 
@@ -77,6 +78,15 @@ app.post('/api/accounts/temporary', (req, res) => {
     let temp = accounts.makeTemporaryToken(token, 30);
     if (!temp) res.status(400).send('Invalid token');
     else res.status(200).send({ token: temp });
+})
+
+app.get('**', (req, res) => {
+    if (fs.existsSync(path.join(__dirname, 'web', req.url))) {
+        res.sendFile(path.join(__dirname, 'web', req.url))
+    }
+    else {
+        res.sendFile('web/index.html', { root: __dirname })
+    }
 })
 
 server.listen(port, () => console.log(`App listening on port ${port}!`));

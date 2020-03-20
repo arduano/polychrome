@@ -13,7 +13,6 @@
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "emitDecoratorMetadata": true,
-        "noEmit": true,
         "module": "commonjs",
         "jsx": "preserve"
     }
