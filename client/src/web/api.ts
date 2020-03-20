@@ -3,7 +3,7 @@ import socketio from 'socket.io-client';
 import { User, BatchEventData, EventData, RecieveBatchEventData, SendBatchEventData } from "../data/misc";
 import events from 'events';
 
-let baseURL = process.env.PUBLIC_URL || 'http://localhost:8080';
+const baseURL = process.env.PUBLIC_URL || 'http://localhost:8080';
 
 type ClientData = {
     guest: boolean;
@@ -198,6 +198,10 @@ class BPRApi extends events.EventEmitter {
 
     async joinRoom(name: string) {
         return new Promise<JoinRoomData>(res => this.io.emit('join room', name, res));
+    }
+
+    static getAudioUrl(key: number) {
+        return `${baseURL}/api/audio/${key}`;
     }
 }
 

@@ -1,6 +1,6 @@
 import { link } from "fs";
 import axios from 'axios';
-import { WebApi } from "../web/restful";
+import BPRApi from "../web/api";
 
 var context = new AudioContext();
 
@@ -39,7 +39,7 @@ export class KeyAudioPlayer {
         let ap = new KeyAudioPlayer();
 
         ap.keyPlayers = [];
-        let urls = [...Array(128).keys()].map(i => WebApi.getAudioUrl(i));
+        let urls = [...Array(128).keys()].map(i => BPRApi.getAudioUrl(i));
 
         let cache = await window.caches.open('piano-audio');
         
