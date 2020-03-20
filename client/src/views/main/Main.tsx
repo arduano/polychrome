@@ -11,6 +11,7 @@ import Slider from 'react-input-slider';
 import socketio from 'socket.io-client';
 import BPRApi, { JoinRoomData } from '../../web/api';
 import { withRouter, RouteProps, RouteComponentProps } from 'react-router';
+import { standardKeyMap } from '../../keymaps/pianoKeyMap';
 
 const barHeight = 80;
 const iconSize = 60;
@@ -95,6 +96,14 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
                 _keyboardState!.unpressKeyWeb(key, user);
             })
             setRoomUsers(data.users);
+        });
+
+        document.addEventListener("keydown", event => {
+            if (standardKeyMap[event.key]) _keyboardState.pressKeyLocal(standardKeyMap[event.key], 1)
+        });
+
+        document.addEventListener("keyup", event => {
+            if (standardKeyMap[event.key]) _keyboardState.unpressKeyLocal(standardKeyMap[event.key])
         });
     }, [])
 

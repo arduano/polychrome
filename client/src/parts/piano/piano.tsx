@@ -193,17 +193,13 @@ function Piano(props: { keyboard: PianoState }) {
         keyboard.pressKeyLocal(keyNumber, 1);
         lastKeyClicked = keyNumber;
 
-        //setTimeout(() => keyboard.unpressKey(keyNumber, ''), 1000);
+        console.log(keyNumber);
     }
 
     function mouseUp() {
         if (lastKeyClicked === -1) return;
         keyboard.unpressKeyLocal(lastKeyClicked)
         lastKeyClicked = -1;
-    }
-
-    function midiNoteOn() {
-
     }
 
     useEffect(() => {

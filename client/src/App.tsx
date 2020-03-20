@@ -29,7 +29,6 @@ function App() {
             store.token = api.token;
             setApi(api);
         });
-        console.log(api);
     }, []);
 
     let loading =
