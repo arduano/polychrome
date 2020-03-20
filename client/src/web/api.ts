@@ -70,7 +70,7 @@ class BPRApi extends events.EventEmitter {
 
         let tempTokenPromise = axios.post(`${baseURL}/api/accounts/temporary`, { token });
 
-        let socket = socketio('http://localhost:8080');
+        let socket = socketio(baseURL);
         await new Promise((res, rej) => {
             socket.on('login', async (callback: any) => {
                 let token = (await tempTokenPromise).data.token;
