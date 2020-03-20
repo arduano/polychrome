@@ -41,22 +41,34 @@ export class KeyAudioPlayer {
         ap.keyPlayers = [];
         let urls = [...Array(128).keys()].map(i => BPRApi.getAudioUrl(i));
 
-        let caches = window.caches;
-        if(!caches) caches = new CacheStorage();
-        let cache = await caches.open('piano-audio');
-        
-        let bufferWaiters = urls.map(async key => {
-            ap.keyPlayers.push([]);
+        let bufferWaiters: Promise<AudioBuffer>[]
 
-            let resp = await cache.match(key);
-            if (!resp) {
-                await cache.add(key);
-                resp = await cache.match(key);
-            }
-            let buffer = await resp!.arrayBuffer();
-            let audio = await context.decodeAudioData(buffer);
-            return audio;
-        })
+        if (window.caches) {
+            let cache = await caches.open('piano-audio');
+
+            bufferWaiters = urls.map(async key => {
+                ap.keyPlayers.push([]);
+
+                let resp = await cache.match(key);
+                if (!resp) {
+                    await cache.add(key);
+                    resp = await cache.match(key);
+                }
+                let buffer = await resp!.arrayBuffer();
+                let audio = await context.decodeAudioData(buffer);
+                return audio;
+            })
+        }
+        else{
+            bufferWaiters = urls.map(async url => {
+                ap.keyPlayers.push([]);
+
+                let resp = await fetch(url);
+                let buffer = await resp!.arrayBuffer();
+                let audio = await context.decodeAudioData(buffer);
+                return audio;
+            })
+        }
 
         ap.audioNoteBuffers = await Promise.all(bufferWaiters);
 
@@ -66,8 +78,8 @@ export class KeyAudioPlayer {
         return ap;
     }
 
-    setVolume(vol: number){
-        if(vol < 0.000001) vol = 0.000001;
+    setVolume(vol: number) {
+        if (vol < 0.000001) vol = 0.000001;
         this.globalGain = vol;
         this.mainGain!.gain.value = vol;
     }
