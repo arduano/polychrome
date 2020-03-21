@@ -10,6 +10,10 @@ export interface User {
     pfp: string;
 }
 
+export interface JoinedUser extends User {
+    color: Color;
+}
+
 export interface Room {
     people: User[];
     displayName: string;

@@ -192,8 +192,6 @@ function Piano(props: { keyboard: PianoState }) {
         if (lastKeyClicked != -1) keyboard.unpressKeyLocal(lastKeyClicked);
         keyboard.pressKeyLocal(keyNumber, 1);
         lastKeyClicked = keyNumber;
-
-        console.log(keyNumber);
     }
 
     function mouseUp() {

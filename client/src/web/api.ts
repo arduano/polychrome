@@ -1,9 +1,15 @@
 import axios from "axios";
 import socketio from 'socket.io-client';
-import { User, BatchEventData, EventData, RecieveBatchEventData, SendBatchEventData } from "../data/misc";
+import { User, BatchEventData, EventData, RecieveBatchEventData, SendBatchEventData, JoinedUser } from "../data/misc";
 import events from 'events';
 
 const baseURL = process.env.PUBLIC_URL || 'http://localhost:8080';
+
+type Color = {
+    r: number;
+    g: number;
+    b: number;
+}
 
 type ClientData = {
     guest: boolean;
@@ -11,12 +17,17 @@ type ClientData = {
     id: string;
     pfp: string;
     name: string;
+    color: Color;
     socket: SocketIOClient.Socket;
 }
 
 export interface JoinRoomData {
-    users: User[];
+    users: JoinedUser[];
     name: string;
+}
+
+interface ReadyData {
+    color: Color;
 }
 
 type UserEventData = {
@@ -30,8 +41,8 @@ async function delay(time: number) {
 }
 
 declare interface BPRApi { // Event declarations
-    on(event: 'user join', listener: (user: User) => void): this;
-    on(event: 'user leave', listener: (user: User) => void): this;
+    on(event: 'user join', listener: (user: JoinedUser) => void): this;
+    on(event: 'user leave', listener: (user: JoinedUser) => void): this;
     on(event: 'note on', listener: (user: string, key: number, velocity: number) => void): this;
     on(event: 'note off', listener: (user: string, key: number) => void): this;
     on(event: 'error', listener: (error: string) => void): this;
@@ -59,6 +70,7 @@ class BPRApi extends events.EventEmitter {
     get id() { return this._data.id; }
     get pfp() { return this._data.pfp; }
     get name() { return this._data.name; }
+    get color() { return this._data.color; }
 
     get defaultRoom() { return 'main'; }
 
@@ -67,6 +79,7 @@ class BPRApi extends events.EventEmitter {
     static async logInAsGuest(name: string) {
         let acc = (await axios.post(`${baseURL}/api/accounts/guest`, { name })).data as User & { token: string };
         let token = acc.token;
+        let color: Color | undefined = undefined;
 
         let tempTokenPromise = axios.post(`${baseURL}/api/accounts/temporary`, { token });
 
@@ -76,7 +89,8 @@ class BPRApi extends events.EventEmitter {
                 let token = (await tempTokenPromise).data.token;
                 callback(token)
             });
-            socket.on('ready', () => {
+            socket.on('ready', (data: ReadyData) => {
+                color = data.color;
                 res()
             });
             socket.on('login error', () => {
@@ -89,9 +103,10 @@ class BPRApi extends events.EventEmitter {
             ...acc,
             socket,
             guest: true,
+            color: color!
         })
 
-        socket.on('error', (error: string) => {
+        socket.on('_error', (error: string) => {
             api.emit('error', error);
             console.error(error);
         });

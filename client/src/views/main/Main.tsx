@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Piano from '../../parts/piano/piano';
 import styled from 'styled-components';
 import User from '../../parts/user/user';
-import { User as UserType } from '../../data/misc';
+import { User as UserType, JoinedUser } from '../../data/misc';
 import PianoState from '../../data/pianoState';
 import { KeyAudioPlayer } from '../../data/audioHandler';
 import { MidiHandler } from '../../data/midiHandler';
@@ -62,6 +62,8 @@ const ToolbarContainer = styled.div`
     bottom: 0;
     width: 100%;
     height: 3em;
+    display: flex;
+    align-items: center;
 `;
 
 interface MainProps {
@@ -72,7 +74,7 @@ interface MainProps {
 
 function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) {
     const [keyboardState, setKeyboardState] = useState<PianoState | undefined>(undefined);
-    const [roomUsers, setRoomUsers] = useState<UserType[]>([]);
+    const [roomUsers, setRoomUsers] = useState<JoinedUser[]>([]);
     const [volume, setVol] = useState<number>(100);
 
     let api = props.api;
@@ -90,7 +92,7 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
                 setRoomUsers(u => u.filter(_u => _u.id !== user.id));
             })
             api.on('note on', (user, key, velocity) => {
-                _keyboardState!.pressKeyWeb(key, velocity, user, { r: 0, g: 255, b: 0 });
+                _keyboardState!.pressKeyWeb(key, velocity, user, roomUsers.find(u => u.id === user)!.color);
             })
             api.on('note off', (user, key) => {
                 _keyboardState!.unpressKeyWeb(key, user);
@@ -99,6 +101,7 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
         });
 
         document.addEventListener("keydown", event => {
+            if (event.repeat) return;
             if (standardKeyMap[event.key]) _keyboardState.pressKeyLocal(standardKeyMap[event.key], 1)
         });
 
@@ -116,21 +119,25 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
                 <UserBar>
                     {roomUsers.map((user, i) => (
                         <UserContainer key={i}>
-                            <User name={user.name} pfp={user.pfp} />
+                            <User name={user.name} pfp={user.pfp} color={user.color} />
                         </UserContainer>
                     ))}
                 </UserBar>
-                <IconContainer>
-                    <Icon>
-                        asdf
-                </Icon>
-                </IconContainer>
+                {/*
+                    <IconContainer>
+                        <Icon>
+                            asdf
+                        </Icon>
+                    </IconContainer>
+                */}
             </TopBar>
             <ToolbarContainer>
-                <Slider axis="x" x={volume} onChange={e => {
-                    setVol(e.x)
-                    props.audioPlayer.setVolume(Math.pow(e.x / 100, 2));
-                }} />
+                <div style={{ marginLeft: '15px' }}                >
+                    <Slider axis="x" x={volume} onChange={e => {
+                        setVol(e.x)
+                        props.audioPlayer.setVolume(Math.pow(e.x / 100, 2));
+                    }} />
+                </div>
             </ToolbarContainer>
         </Container>
     )

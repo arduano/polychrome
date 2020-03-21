@@ -13,15 +13,85 @@ import { MidiHandler } from './data/midiHandler';
 import store from './data/stores';
 import BPRApi from './web/api';
 
+const OverlayPage = styled.div`
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+
+    background-color: #333;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+`;
+
+const EnterNameForm = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 100px;
+`;
+
+const EnterNameTitle = styled.div`
+    font-size: 32px;
+    color: #CCC;
+`;
+
+const EnterNameBox = styled.input`
+    font-size: 24px;
+    color: #AAA;
+    border: 1px solid #777;
+    border-radius: 15px;
+    background-color: #222;
+    outline: none;
+    padding: 10px 15px;
+    margin-top: 20px;
+
+    transition: all 0.1s;
+    box-shadow: 0 0 8px black;
+
+    :focus{
+        transform: translateY(2px);
+        box-shadow: 0 0 5px black;
+    }
+`;
+
+const EnterNameButton = styled.button`
+    font-size: 28px;
+    border-radius: 10px;
+    background-color: #00AA00;
+    border: none;
+    padding: 5px 20px;
+    margin-top: 15px;
+    box-shadow: 0 0 8px black;
+    color: white;
+    outline: none;
+    transition: all 0.1s;
+
+    :active{
+        transform: translateY(2px);
+        box-shadow: 0 0 5px black;
+    }
+`;
+
 function App() {
     const [audioPlayer, setAudioPlayer] = useState<KeyAudioPlayer | null>(null);
     const [midiHandler, setMidiHandler] = useState<MidiHandler | null>(null);
     const [api, setApi] = useState<BPRApi | null>(null);
+    const [loggingIn, setLoggingIn] = useState<boolean>(false);
+    const [enteredName, setEnteredName] = useState<string>('');
+    const [mainInput, setMainInput] = useState<'loading' | HTMLInputElement>('loading');
+    const [inputLoaded, setInputLoaded] = useState<boolean>(false);
 
-    useEffect(() => {
-        MidiHandler.create().then(setMidiHandler);
-        KeyAudioPlayer.create().then(setAudioPlayer);
-        BPRApi.logInAsGuest('Arduano').then(api => {
+    const submitName = (name: string) => {
+        if (loggingIn) return;
+        name = name.trim();
+        if (name.length == 0 || name.length > 25) return;
+        localStorage.setItem('guestName', name);
+        localStorage.setItem('guestNameTime', Date.now().toString());
+        BPRApi.logInAsGuest(name).then(api => {
             store.user.guest = api.guest;
             store.user.id = api.id;
             store.user.pfp = api.pfp;
@@ -29,6 +99,27 @@ function App() {
             store.token = api.token;
             setApi(api);
         });
+        setLoggingIn(true);
+    }
+
+    (() => {
+        let guestName = localStorage.getItem('guestName');
+        if (guestName !== null) {
+            let time = localStorage.getItem('guestNameTime');
+            if (time !== null && parseInt(time) > Date.now() - 1000 * 60 * 60) {
+                submitName(guestName)
+            }
+        }
+    })()
+
+    if (mainInput != 'loading' && !inputLoaded) {
+        mainInput.focus();
+        setInputLoaded(true);
+    }
+
+    useEffect(() => {
+        MidiHandler.create().then(setMidiHandler);
+        KeyAudioPlayer.create().then(setAudioPlayer);
     }, []);
 
     let loading =
@@ -38,7 +129,44 @@ function App() {
     return (
         <Router>
             {loading ? (
-                <div>temporary loading message...</div>
+                <OverlayPage>
+                    {
+                        api || loggingIn ? (
+                            <div>temporary loading message...</div>
+                        ) : (
+                                <EnterNameForm>
+                                    <EnterNameTitle>Enter Name</EnterNameTitle>
+                                    <EnterNameBox
+                                        spellCheck={false}
+                                        value={enteredName}
+                                        onChange={e => {
+                                            if (e.target.value.length > 25) return;
+                                            setEnteredName(e.target.value)
+                                        }}
+                                        ref={e => {
+                                            if (e && mainInput === 'loading') {
+                                                setMainInput(e);
+                                            }
+                                        }}
+                                        onKeyPress={e => {
+                                            if (e.key == 'Enter') {
+                                                if (inputLoaded && mainInput !== 'loading') {
+                                                    submitName(mainInput.value);
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    <EnterNameButton onClick={e => {
+                                        if (inputLoaded && mainInput !== 'loading') {
+                                            submitName(mainInput.value);
+                                        }
+                                    }}>
+                                        Join!
+                                    </EnterNameButton>
+                                </EnterNameForm>
+                            )
+                    }
+                </OverlayPage>
             ) : (
                     <Switch>
                         <Route path='/' exact>

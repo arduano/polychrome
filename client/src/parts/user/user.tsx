@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Color } from '../../data/misc';
 
 const UserContainer = styled.div`
     padding: 0.3px;
@@ -36,6 +37,13 @@ const Pfp = styled.div`
     border-radius: 100%;
 `;
 
+const ColorCircle = styled.div`
+    width: 20px;
+    height: 20px;
+    box-shadow: 0 0 3px black;
+    border-radius: 100%;
+`;
+
 const Content = styled.div`
     padding-left: 3px;
     padding-right: 7px;
@@ -52,14 +60,23 @@ const Username = styled.div`
 
 interface UserProps {
     pfp: string;
+    color: Color;
     name: string;
 }
 
 function User(props: UserProps) {
+
+    function getColStr(col: Color) {
+        return `rgb(${col.r},${col.g},${col.b})`;
+    }
+
     return (
         <UserContainer>
             <PfpContainer>
-                <Pfp style={{ backgroundImage: `url("${props.pfp}")` }} />
+                {/*
+                    <Pfp style={{ backgroundImage: `url("${props.pfp}")` }} />
+                */}
+                <ColorCircle style={{ backgroundColor: getColStr(props.color) }} />
             </PfpContainer>
             <Content>
                 <Username>

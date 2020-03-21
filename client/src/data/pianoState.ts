@@ -108,7 +108,7 @@ export default class PianoState {
 
     pressKeyLocal(key: number, velocity: number) {
         this.api.pressKey(key, velocity);
-        this.pressKeyWeb(key, velocity, this.api.id, { r: 155, g: 0, b: 0 });
+        this.pressKeyWeb(key, velocity, this.api.id, this.api.color);
     }
 
     unpressKeyLocal(key: number) {
@@ -187,9 +187,10 @@ export default class PianoState {
                 col.b = Math.max(col.b - keyDesaturate);
             }
             else {
-                col.r = Math.min(col.r + keyDesaturate);
-                col.g = Math.min(col.g + keyDesaturate);
-                col.b = Math.min(col.b + keyDesaturate);
+                let keyDesaturateExtra = keyDesaturate + col.g / 3;
+                col.r = Math.min(col.r + keyDesaturateExtra);
+                col.g = Math.min(col.g + keyDesaturateExtra);
+                col.b = Math.min(col.b + keyDesaturateExtra);
             }
 
             key.pressStrength = Math.max(pressState * 2 - 1);
