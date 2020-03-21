@@ -76,13 +76,14 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
     const [keyboardState, setKeyboardState] = useState<PianoState | undefined>(undefined);
     const [roomUsers, setRoomUsers] = useState<JoinedUser[]>([]);
     const [volume, setVol] = useState<number>(100);
+    const [state, setState] = useState({keyboardState, roomUsers, volume});
+    state.roomUsers = roomUsers;
+    state.keyboardState = keyboardState;
+    state.volume = volume;
 
     let api = props.api;
 
-    useEffect(() => {
-        let _keyboardState = new PianoState(props.audioPlayer, props.midiHandler, props.api);
-        setKeyboardState(_keyboardState);
-
+    const processApi = () => {
         api.joinRoom(props.match.params.room).then((data: JoinRoomData) => {
             api.on('user join', (user) => {
                 setRoomUsers(u => u.concat([user]));
@@ -92,13 +93,20 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
                 setRoomUsers(u => u.filter(_u => _u.id !== user.id));
             })
             api.on('note on', (user, key, velocity) => {
-                _keyboardState!.pressKeyWeb(key, velocity, user, roomUsers.find(u => u.id === user)!.color);
+                state.keyboardState!.pressKeyWeb(key, velocity, user, state.roomUsers.find(u => u.id === user)!.color);
             })
             api.on('note off', (user, key) => {
-                _keyboardState!.unpressKeyWeb(key, user);
+                state.keyboardState!.unpressKeyWeb(key, user);
             })
             setRoomUsers(data.users);
         });
+    }
+
+    useEffect(() => {
+        let _keyboardState = new PianoState(props.audioPlayer, props.midiHandler, props.api);
+        setKeyboardState(_keyboardState);
+
+        processApi();
 
         document.addEventListener("keydown", event => {
             if (event.repeat) return;
