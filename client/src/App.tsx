@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import Main from './views/main/Main';
 import {
     BrowserRouter as Router,
@@ -76,6 +76,36 @@ const EnterNameButton = styled.button`
     }
 `;
 
+const Spin = keyframes`
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+`;
+
+const Loader = styled.div`
+    animation: ${Spin} 1.2s linear infinite;
+    border-radius: 100%;
+    border: 3px solid black;
+    border-color: #7289da #7289da #7289da transparent;
+    margin: auto;
+    width: 40px;
+    height: 40px;
+`;
+
+const LoaderContainer = styled.div`
+    display: flex;
+    align-items: center;
+`;
+
+const LoaderText = styled.div`
+    font-size: 32px;
+    color: #AAA;
+    margin-left: 20px;
+`;
+
 function App() {
     const [audioPlayer, setAudioPlayer] = useState<KeyAudioPlayer | null>(null);
     const [midiHandler, setMidiHandler] = useState<MidiHandler | null>(null);
@@ -132,7 +162,15 @@ function App() {
                 <OverlayPage>
                     {
                         api || loggingIn ? (
-                            <div>temporary loading message...</div>
+                            <LoaderContainer>
+                                <Loader></Loader>
+                                <Switch>
+                                    {!api && (<LoaderText>Connecting...</LoaderText>)}
+                                    {!setMidiHandler && (<LoaderText>Waiting for midi...</LoaderText>)}
+                                    {!midiHandler && (<LoaderText>Downloading audio...</LoaderText>)}
+                                    (<LoaderText>Loading...</LoaderText>)
+                                </Switch>
+                            </LoaderContainer>
                         ) : (
                                 <EnterNameForm>
                                     <EnterNameTitle>Enter Name</EnterNameTitle>
