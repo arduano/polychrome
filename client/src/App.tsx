@@ -166,8 +166,8 @@ function App() {
                                 <Loader></Loader>
                                 <Switch>
                                     {!api && (<LoaderText>Connecting...</LoaderText>)}
-                                    {!setMidiHandler && (<LoaderText>Waiting for midi...</LoaderText>)}
-                                    {!midiHandler && (<LoaderText>Downloading audio...</LoaderText>)}
+                                    {!midiHandler && (<LoaderText>Waiting for midi...</LoaderText>)}
+                                    {!audioPlayer && (<LoaderText>Downloading audio...</LoaderText>)}
                                     (<LoaderText>Loading...</LoaderText>)
                                 </Switch>
                             </LoaderContainer>

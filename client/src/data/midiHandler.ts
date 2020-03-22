@@ -17,17 +17,20 @@ export class MidiHandler {
         mh.noteOff = mh.noteOff.bind(mh);
         mh.channelMode = mh.channelMode.bind(mh);
 
-        await new Promise((ret, rej) => {
-            webmidi.enable(function (err) {
-                err ? console.log("WebMIDI could not start!") : console.log("WebMIDI started!");
+        try {
+            await new Promise((ret, rej) => {
+                webmidi.enable(function (err) {
+                    err ? console.log("WebMIDI could not start!") : console.log("WebMIDI started!");
 
-                if (err) rej();
-                else ret();
+                    if (err) rej();
+                    else ret();
 
-                console.log('Inputs:', webmidi.inputs);
-                console.log('Outputs:', webmidi.outputs);
-            }, true);
-        });
+                    console.log('Inputs:', webmidi.inputs);
+                    console.log('Outputs:', webmidi.outputs);
+                }, true);
+            });
+        }
+        catch { }
         return mh;
     }
 
@@ -50,27 +53,25 @@ export class MidiHandler {
     }
 
     private noteOn(e: InputEventNoteon) {
-        if(e.velocity <= 6 / 127) return;
-        if(e.channel == 10) return;
+        if (e.velocity <= 6 / 127) return;
+        if (e.channel == 10) return;
         this.rateFactor -= (Date.now() - this.lastNoteTime) / 1000 * this.maxNps;
         this.lastNoteTime = Date.now();
-        if(this.rateFactor < 0) this.rateFactor = 0;
-        if(this.rateFactor > e.velocity * this.maxNps) return;
+        if (this.rateFactor < 0) this.rateFactor = 0;
+        if (this.rateFactor > e.velocity * this.maxNps) return;
         this.rateFactor++;
         this.pianoState?.pressKeyLocal(e.note.number, e.velocity)
     }
 
     private noteOff(e: InputEventNoteoff) {
-        if(e.channel == 10) return;
+        if (e.channel == 10) return;
         this.pianoState?.unpressKeyLocal(e.note.number)
     }
 
     private channelMode(e: InputEventChannelmode) {
-        if(e.controller.name == "allsoundoff")
-        {
+        if (e.controller.name == "allsoundoff") {
             console.log("allsoundoff");
-            for(var i = 0; i < 128; i++) 
-            {
+            for (var i = 0; i < 128; i++) {
                 this.pianoState?.unpressKeyLocal(i);
             }
         }
