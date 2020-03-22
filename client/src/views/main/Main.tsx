@@ -6,12 +6,13 @@ import { User as UserType, JoinedUser } from '../../data/misc';
 import PianoState from '../../data/pianoState';
 import { KeyAudioPlayer } from '../../data/audioHandler';
 import { MidiHandler } from '../../data/midiHandler';
-import Toolbar from '../../parts/toolbar/toolbar';
 import Slider from 'react-input-slider';
 import socketio from 'socket.io-client';
 import BPRApi, { JoinRoomData } from '../../web/api';
 import { withRouter, RouteProps, RouteComponentProps } from 'react-router';
 import { standardKeyMap } from '../../keymaps/pianoKeyMap';
+import PopoutButton from '../../parts/toolbar/popoutButton';
+import PopoutBox from '../../parts/toolbar/popoutBox';
 
 const barHeight = 80;
 const iconSize = 60;
@@ -41,17 +42,6 @@ const PianoContainer = styled.div`
     bottom: 0;
 `;
 
-const IconContainer = styled.div`
-    width: ${iconSize}px;
-`;
-
-const Icon = styled.div`
-    width: ${iconSize}px;
-    height: ${iconSize}px;
-    margin: 10px;
-    background-color: red;
-`;
-
 const UserContainer = styled.div`
     margin: 5px;
 `;
@@ -59,11 +49,15 @@ const UserContainer = styled.div`
 const ToolbarContainer = styled.div`
     position: absolute;
     right: 0;
+    left: 0;
     bottom: 0;
-    width: 100%;
     height: 3em;
+    padding-left: 20px;
     display: flex;
     align-items: center;
+    color: #ccc;
+    font-weight: 700;
+    user-select: none;
 `;
 
 interface MainProps {
@@ -131,22 +125,22 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
                         </UserContainer>
                     ))}
                 </UserBar>
-                {/*
-                    <IconContainer>
-                        <Icon>
-                            asdf
-                        </Icon>
-                    </IconContainer>
-                */}
             </TopBar>
             <ToolbarContainer>
-                <div style={{ marginLeft: '15px' }}                >
-                    <Slider axis="x" x={volume} onChange={e => {
-                        setVol(e.x)
-                        props.audioPlayer.setVolume(Math.pow(e.x / 100, 2));
-                    }} />
+                <PopoutButton text={'Room'}><div style={{height: '9999px'}}>Test</div></PopoutButton>
+                <PopoutButton text={'MIDI'}><div style={{height: '99px'}}>Fuck</div></PopoutButton>
+                <PopoutButton text={'Settings'}><div style={{height: '9px'}}>Shit</div></PopoutButton>
+                <div style={{ display: 'flex' }}>
+                    Volume:
+                    <div style={{ marginLeft: '15px' }}>
+                        <Slider axis="x" x={volume} onChange={e => {
+                            setVol(e.x)
+                            props.audioPlayer.setVolume(Math.pow(e.x / 100, 2));
+                        }} />
+                    </div>
                 </div>
             </ToolbarContainer>
+            <PopoutBox></PopoutBox>
         </Container>
     )
 }

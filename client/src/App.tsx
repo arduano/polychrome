@@ -12,6 +12,7 @@ import { KeyAudioPlayer } from './data/audioHandler';
 import { MidiHandler } from './data/midiHandler';
 import store from './data/stores';
 import BPRApi from './web/api';
+import popoutStore from './data/popout';
 
 const OverlayPage = styled.div`
     position: fixed;
@@ -150,6 +151,16 @@ function App() {
     useEffect(() => {
         MidiHandler.create().then(setMidiHandler);
         KeyAudioPlayer.create().then(setAudioPlayer);
+
+        document.addEventListener('click', e => {
+            if(!popoutStore.showing) return;
+            let target = e.target as Element | null;
+            while(target) {
+                if(target.classList.contains('popout-click-ignore')) return;
+                target = target.parentElement;
+            }
+            popoutStore.showing = false;
+        });
     }, []);
 
     let loading =
