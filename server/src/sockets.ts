@@ -70,7 +70,7 @@ export default class SocketRooms {
 
         let packetRate = 0;
         let lastSendTime = 0;
-        let maxPacketRate = 2000;
+        let maxPacketRate = 5000;
 
         let userData = await this.getDataByToken(data);
         let joinData: JoinedUser = {
@@ -151,6 +151,8 @@ export default class SocketRooms {
                 lastSendTime = Date.now();
                 if (packetRate < 0) packetRate = 0;
                 if (packetRate > maxPacketRate) return 'Hitting event rate limit';
+                console.log(packetRate);
+                console.log(data.data.length);
                 packetRate += data.data.length;
 
                 let time = data.recordStartTime;
@@ -176,6 +178,10 @@ export default class SocketRooms {
 
             let error = process();
             if (error) socket.emit('_error', 'Event batch rejected: ' + error);
+        })
+
+        socket.on('send msg', (text: string) => {
+            emitToOthers('chat', text, roomUser.id);
         })
     }
 };

@@ -32,8 +32,7 @@ export class KeyAudioPlayer {
     globalGain: number = 1;
     mainGain?: GainNode;
 
-    private constructor() {
-    }
+    private constructor() {}
 
     static async create() {
         let ap = new KeyAudioPlayer();

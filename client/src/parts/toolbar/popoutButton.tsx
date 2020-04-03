@@ -11,7 +11,7 @@ const Button = styled.div`
   margin-right: 10px;
   cursor: pointer;
   user-select: none;
-  box-shadow: 0 0 5px black;
+  box-shadow: 0 0 2px black;
 
   :hover {
     transform: translateY(-1px);
@@ -56,7 +56,7 @@ function PopoutButton(props: PopoutButtonProps) {
           let buttonCenter = pos.left + pos.width / 2
           let bottom = clientHeight - (pos.top - 10);
           let left = buttonCenter - popoutStore.width / 2;
-          let maxHeight = clientHeight - bottom - 20;
+          let maxHeight = clientHeight - bottom - 40;
           if(left < 20) left = 20;
 
           popoutStore.pos = {left, bottom, maxHeight};

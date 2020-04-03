@@ -43,8 +43,9 @@ async function delay(time: number) {
 declare interface BPRApi { // Event declarations
     on(event: 'user join', listener: (user: JoinedUser) => void): this;
     on(event: 'user leave', listener: (user: JoinedUser) => void): this;
-    on(event: 'note on', listener: (user: string, key: number, velocity: number) => void): this;
-    on(event: 'note off', listener: (user: string, key: number) => void): this;
+    on(event: 'note on', listener: (user: JoinedUser, key: number, velocity: number) => void): this;
+    on(event: 'note off', listener: (user: JoinedUser, key: number) => void): this;
+    on(event: 'chat', listener: (text: string, user: JoinedUser) => void): this;
     on(event: 'error', listener: (error: string) => void): this;
 }
 
@@ -57,6 +58,8 @@ class BPRApi extends events.EventEmitter {
     }
 
     private _data: ClientData;
+
+    private roomUsers: JoinedUser[] = [];
 
     private noteDataBuffer: EventData[] = [];
     private noteDataRecordStart: number = Date.now();
@@ -71,6 +74,7 @@ class BPRApi extends events.EventEmitter {
     get pfp() { return this._data.pfp; }
     get name() { return this._data.name; }
     get color() { return this._data.color; }
+    get self(): JoinedUser { return { color: this.color, name: this.name, id: this.id, pfp: this.pfp }; }
 
     get defaultRoom() { return 'main'; }
 
@@ -115,16 +119,26 @@ class BPRApi extends events.EventEmitter {
     }
 
     private async _initWebsocket() {
-        this.io.on('user joined', (user: User) => {
+        this.io.on('user joined', (user: JoinedUser) => {
+            if (this.roomUsers.findIndex(u => u.id == user.id) != -1) return;
+            this.roomUsers.push(user);
             this.emit('user join', user);
         })
 
-        this.io.on('user left', (user: User) => {
+        this.io.on('user left', (user: JoinedUser) => {
+            let i = this.roomUsers.findIndex(u => u.id == user.id);
+            if (i != -1) this.roomUsers.splice(i, 1);
             this.emit('user leave', user);
         })
 
         this.io.on('data', (data: RecieveBatchEventData) => {
             this.processDataPacket(data);
+        })
+
+        this.io.on('chat', (text: string, user: string) => {
+            let joinedUser = this.roomUsers.find(u => u.id === user);
+            this.emit('chat', text, joinedUser);
+            console.log(user + ": " + text);
         })
 
         this.noteSendLoop();
@@ -144,6 +158,10 @@ class BPRApi extends events.EventEmitter {
             this.noteDataRecordStart = Date.now();
             await delay(100);
         }
+    }
+
+    public sendMessage(text: string) {
+        this.io.emit('send msg', text);
     }
 
     private async eventProcessor() {
@@ -178,13 +196,15 @@ class BPRApi extends events.EventEmitter {
     }
 
     private processEvent(event: EventData, user: string) {
+        let joinedUser = this.roomUsers.find(u => u.id === user);
+
         if (event.event == 'note-on') {
             let data = event.data;
-            this.emit('note on', user, data.key, data.velocity);
+            this.emit('note on', joinedUser, data.key, data.velocity);
         }
         else if (event.event == 'note-off') {
             let data = event.data;
-            this.emit('note off', user, data.key);
+            this.emit('note off', joinedUser, data.key);
         }
     }
 
@@ -214,7 +234,9 @@ class BPRApi extends events.EventEmitter {
     }
 
     async joinRoom(name: string) {
-        return new Promise<JoinRoomData>(res => this.io.emit('join room', name, res));
+        let data = await new Promise<JoinRoomData>(res => this.io.emit('join room', name, res));
+        this.roomUsers = data.users;
+        return data;
     }
 
     static getAudioUrl(key: number) {
