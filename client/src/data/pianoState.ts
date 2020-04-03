@@ -91,9 +91,9 @@ export default class PianoState {
         })
     }
 
-    unpressKeyWeb(key: number, agent: string) {
+    unpressKeyWeb(key: number, agent: string): boolean {
         let k = this.keys[key];
-        if (!k) return;
+        if (!k) return false;
 
         for (let i = k.pressers.length - 1; i >= 0; i--) {
             let p = k.pressers[i];
@@ -101,19 +101,37 @@ export default class PianoState {
                 p.unpressTime = Date.now();
                 p.pressed = false;
                 this.player.unpressKey(p.key, '');
-                break;
+                return true;
             }
         }
+        return false;
     }
 
     pressKeyLocal(key: number, velocity: number) {
-        this.api.pressKey(key, velocity);
         this.pressKeyWeb(key, velocity, this.api.id, this.api.color);
+        this.api.pressKey(key, velocity);
     }
 
-    unpressKeyLocal(key: number) {
-        this.api.unpressKey(key);
-        this.unpressKeyWeb(key, this.api.id);
+    unpressKeyLocal(key: number): boolean {
+        if(this.unpressKeyWeb(key, this.api.id)){
+            this.api.unpressKey(key);
+            return true;
+        }
+        return false;
+    }
+
+    unpressAllKeysLocal() {
+        let agent = this.api.id;
+        this.keys.map(k => {
+            for (let i = k.pressers.length - 1; i >= 0; i--) {
+                let p = k.pressers[i];
+                if (p.agent === agent && p.pressed) {
+                    p.unpressTime = Date.now();
+                    p.pressed = false;
+                    this.player.unpressKey(p.key, '');
+                }
+            }
+        });
     }
 
     updateAllKeys() {

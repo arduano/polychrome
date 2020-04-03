@@ -57,9 +57,10 @@ function PopoutButton(props: PopoutButtonProps) {
           let bottom = clientHeight - (pos.top - 10);
           let left = buttonCenter - popoutStore.width / 2;
           let maxHeight = clientHeight - bottom - 40;
+          let topHeightSubtract = clientHeight - bottom;
           if(left < 20) left = 20;
 
-          popoutStore.pos = {left, bottom, maxHeight};
+          popoutStore.pos = {left, bottom, maxHeight, topHeightSubtract, minTop: 40};
           popoutStore.showing = true;
           popoutStore.children = props.children;
         }}

@@ -12,7 +12,6 @@ const PopoutBoxCon = styled.div`
   overflow-y: auto;
   transition: all 0.2s ease;
   border-radius: 10px;
-  padding: 10px;
 
   ::-webkit-scrollbar {
     width: 1em;
@@ -30,10 +29,36 @@ const PopoutBoxCon = styled.div`
   }
 `;
 
+const Inner = styled.div`
+  padding: 10px;
+`;
+
 function PopoutBox(props: {}) {
+  const [top, setTop] = useState<number | undefined>(undefined);
+  const [height, setHeight] = useState<number | undefined>(undefined);
+
+  if (!popoutStore.showing) {
+    if (undefined !== top) setTop(undefined);
+  }
+
   return (
     <>
-      {popoutStore.showing && (<PopoutBoxCon className={'popout-click-ignore'} style={{...popoutStore.pos, width: popoutStore.width}}>{popoutStore.children}</PopoutBoxCon>)}
+      {popoutStore.showing && (
+        <PopoutBoxCon className={'popout-click-ignore'} style={{ ...popoutStore.pos, width: popoutStore.width, top }}>
+          <Inner ref={r => {
+            if (!r) return;
+            if (popoutStore.pos.topHeightSubtract && popoutStore.pos.minTop) {
+              if (height === r.clientHeight && top !== undefined) return;
+              setHeight(r.clientHeight);
+              let newTop = popoutStore.pos.topHeightSubtract - r.clientHeight;
+              if (newTop < popoutStore.pos.minTop) newTop = popoutStore.pos.minTop;
+              setTop(newTop);
+            }
+          }}>
+            {popoutStore.children}
+          </Inner>
+        </PopoutBoxCon>
+      )}
     </>
   );
 }

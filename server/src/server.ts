@@ -33,7 +33,7 @@ type AuthReq = express.Request & {
 let checkAuth = (req: AuthReq, res: express.Response, next) => {
     let token = req.headers.authorization;
     let data = accounts.verifyToken(token);
-    if(!data){
+    if (!data) {
         res.status(401).send('Invalid auth');
         return;
     }

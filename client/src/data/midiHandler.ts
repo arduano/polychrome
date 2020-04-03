@@ -72,7 +72,7 @@ export class MidiHandler {
         if (e.controller.name == "allsoundoff") {
             console.log("allsoundoff");
             for (var i = 0; i < 128; i++) {
-                this.pianoState?.unpressKeyLocal(i);
+                this.pianoState?.unpressAllKeysLocal();
             }
         }
     }

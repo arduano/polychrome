@@ -211,7 +211,7 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
             <ToolbarContainer>
                 <PopoutButton text={'Room'}><div style={{height: '9999px'}}>Test</div></PopoutButton>
                 <PopoutButton text={'MIDI'}><div style={{height: '99px'}}>Fuck</div></PopoutButton>
-                <PopoutButton text={'Settings'}><div style={{height: '9px'}}>Shit</div></PopoutButton>
+                <PopoutButton text={'Settings'}><div style={{}}>Shit</div></PopoutButton>
                 <div style={{ display: 'flex' }}>
                     Volume:
                     <div style={{ marginLeft: '15px' }}>
