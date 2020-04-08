@@ -60,7 +60,7 @@ export default class PianoState {
                     pressers: [],
                     pressStrength: 0,
                     mixedColor: { r: 0, g: 0, b: 0 },
-                    color: { r: 70, g: 70, b: 100 },
+                    color: { r: 0, g: 0, b: 0 },
                 });
             }
             else {
@@ -200,15 +200,15 @@ export default class PianoState {
             }
 
             if (this.blackKeys[i]) {
-                col.r = Math.max(col.r - keyDesaturate);
-                col.g = Math.max(col.g - keyDesaturate);
-                col.b = Math.max(col.b - keyDesaturate);
+                col.r = Math.max(col.r);
+                col.g = Math.max(col.g);
+                col.b = Math.max(col.b);
             }
             else {
-                let keyDesaturateExtra = keyDesaturate + col.g / 3;
-                col.r = Math.min(col.r + keyDesaturateExtra);
-                col.g = Math.min(col.g + keyDesaturateExtra);
-                col.b = Math.min(col.b + keyDesaturateExtra);
+                let keyDesaturateExtra = keyDesaturate + col.g / 10;
+                col.r = Math.min(col.r);
+                col.g = Math.min(col.g);
+                col.b = Math.min(col.b);
             }
 
             key.pressStrength = Math.max(pressState * 2 - 1);

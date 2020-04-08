@@ -87,4 +87,8 @@ export class MidiHandler {
     getInputs() {
         return webmidi.inputs;
     }
+
+    getOutputs() {
+        return webmidi.outputs;
+    }
 }

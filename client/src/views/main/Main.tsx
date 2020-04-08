@@ -14,6 +14,7 @@ import { standardKeyMap } from '../../keymaps/pianoKeyMap';
 import PopoutButton from '../../parts/toolbar/popoutButton';
 import PopoutBox from '../../parts/toolbar/popoutBox';
 import Msg from '../../parts/chat/chatMsg';
+import MidiPopout from '../../parts/popouts/midiPopout';
 
 const barHeight = 80;
 const iconSize = 60;
@@ -42,6 +43,7 @@ const PianoContainer = styled.div`
     right: 0;
     top: 0;
     bottom: 0;
+    pointer-events: none;
 `;
 
 const UserContainer = styled.div`
@@ -60,6 +62,13 @@ const ToolbarContainer = styled.div`
     color: #ccc;
     font-weight: 700;
     user-select: none;
+`;
+
+const ChatDim = styled.div`
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+    transition: background 0.2s linear;
 `;
 
 const ChatContainer = styled.div`
@@ -85,12 +94,29 @@ const ChatInput = styled.input`
 const MsgContainer = styled.div`
     position: relative;
     width: calc(100% - 10px);
-    margin-bottom: 10px;
+    max-height: 85vh;
+    margin-bottom: 8px;
+    overflow-y: scroll;
+
+    ::-webkit-scrollbar {
+      width: 1em;
+    }
+
+    ::-webkit-scrollbar-track {
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: #333;
+      outline: 1px solid slategrey;
+      border-radius: 10px;
+    }
 `;
 
 const ChatMsg = styled.div`
-    margin-top: 5px;
-    display: inline-block;
+    margin-top: 3px;
+    display: table;
+    padding-bottom: 2px;
 `;
 
 interface MainProps {
@@ -110,6 +136,7 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
     const [roomUsers, setRoomUsers] = useState<JoinedUser[]>([]);
     const [volume, setVol] = useState<number>(100);
     const [msg, setMsg] = useState<Msg[]>([]);
+    const [msgSent, setMsgSent] = useState<boolean>(false);
     const [chatBoxText, setChatBoxText] = useState<string>("");
     const [state, setState] = useState({keyboardState, roomUsers, volume, msg});
     state.roomUsers = roomUsers;
@@ -135,7 +162,8 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
                 state.keyboardState!.unpressKeyWeb(key, user.id);
             })
             api.on('chat', (text, user) => {
-                setMsg([{text, user, id: msgId++}, ...state.msg])
+                setMsg([{text, user, id: msgId++}, ...state.msg]);
+                setMsgSent(true);
             })
             setRoomUsers(data.users);
         });
@@ -144,6 +172,7 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
     const sendMessage = (text: string) => {
         setMsg([{text, user: api.self, id: msgId++}, ...state.msg]);
         api.sendMessage(text);
+        setMsgSent(true);
     }
 
     useEffect(() => {
@@ -156,13 +185,13 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
             let target = event.target as Element;
             if(event.repeat) return;
             if(target.tagName == "INPUT") return;
-            if(standardKeyMap[event.key]) _keyboardState.pressKeyLocal(standardKeyMap[event.key], 1)
+            if(standardKeyMap[event.key.toLocaleLowerCase()]) _keyboardState.pressKeyLocal(standardKeyMap[event.key.toLocaleLowerCase()], 1)
         });
 
         document.addEventListener("keyup", event => {
             let target = event.target as Element;
             if(target.tagName == "INPUT") return;
-            if (standardKeyMap[event.key]) _keyboardState.unpressKeyLocal(standardKeyMap[event.key])
+            if (standardKeyMap[event.key.toLocaleLowerCase()]) _keyboardState.unpressKeyLocal(standardKeyMap[event.key.toLocaleLowerCase()])
         });
     }, [])
 
@@ -170,6 +199,43 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
 
     return (
         <Container>
+          <ChatDim id={"chatContainer"}>
+              <ChatContainer>
+                  <MsgContainer ref={e => {
+                    if(!e) return;
+                    if(msgSent)
+                    {
+                      e.scrollTop = e.scrollHeight;
+                      setMsgSent(false);
+                    }
+                  }}>
+                      {msgReverse.map(msg => (
+                          <ChatMsg key={msg.id}>
+                              <Msg text={msg.text} name={msg.user.name} color={msg.user.color} pfp={msg.user.pfp} />
+                          </ChatMsg>
+                      ))}
+                  </MsgContainer>
+                  <ChatInput value={chatBoxText} onChange={e => {
+                      let newText = e.target.value;
+                      if(newText.length > 1000) {
+                          if(newText.startsWith(chatBoxText)) {
+                              newText = newText.substr(0, 1000);
+                          } else {
+                              return;
+                          }
+                      }
+                      setChatBoxText(newText)
+                  }} 
+                  onKeyPress={e => {
+                      if(e.key == "Enter" && chatBoxText.trimStart().trimEnd().length > 0) {
+                          sendMessage(chatBoxText.trimStart().trimEnd());
+                          setChatBoxText("");
+                      }
+                  }}
+                  onFocus={e => { let chat = document.getElementById("chatContainer") as HTMLElement; chat.style.zIndex="1"; chat.style.background="#0000008c"}}
+                  onBlur={e => {let chat = document.getElementById("chatContainer") as HTMLElement; chat.style.zIndex="0"; chat.style.background="transparent"}}></ChatInput>
+              </ChatContainer>
+            </ChatDim>
             <PianoContainer>
                 {keyboardState && <Piano keyboard={keyboardState} />}
             </PianoContainer>
@@ -182,35 +248,9 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
                     ))}
                 </UserBar>
             </TopBar>
-            <ChatContainer>
-                <MsgContainer>
-                    {msgReverse.map(msg => (
-                        <ChatMsg key={msg.id}>
-                            <Msg text={msg.text} name={msg.user.name} color={msg.user.color} pfp={msg.user.pfp} />
-                        </ChatMsg>
-                    ))}
-                </MsgContainer>
-                <ChatInput value={chatBoxText} onChange={e => {
-                    let newText = e.target.value;
-                    if(newText.length > 1000) {
-                        if(newText.startsWith(chatBoxText)) {
-                            newText = newText.substr(0, 1000);
-                        } else {
-                            return;
-                        }
-                    }
-                    setChatBoxText(newText)
-                }} 
-                onKeyPress={e => {
-                    if(e.key == "Enter") {
-                        sendMessage(chatBoxText);
-                        setChatBoxText("");
-                    }
-                }}></ChatInput>
-            </ChatContainer>
             <ToolbarContainer>
                 <PopoutButton text={'Room'}><div style={{height: '9999px'}}>Test</div></PopoutButton>
-                <PopoutButton text={'MIDI'}><div style={{height: '99px'}}>Fuck</div></PopoutButton>
+                <PopoutButton text={'MIDI'}><div style={{height: '220px'}}><MidiPopout midiHandler={props.midiHandler}></MidiPopout></div></PopoutButton>
                 <PopoutButton text={'Settings'}><div style={{}}>Shit</div></PopoutButton>
                 <div style={{ display: 'flex' }}>
                     Volume:

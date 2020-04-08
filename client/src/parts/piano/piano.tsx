@@ -10,16 +10,28 @@ const Container = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    pointer-events: none;
+    overflow: hidden;
 `;
 
 const PianoContainer = styled.div`
     width: 92%;
     box-shadow: 0 0 20px 15px black;
+    /*animation-name: spin;
+    animation-duration: 100ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+
+    @keyframes spin {
+      from {transform:rotate(0deg);}
+      to {transform:rotate(360deg);}
+    }*/
 `;
 
 const PianoCanvas = styled.canvas`
     width: calc(100% + 20px);
     margin: -10px;
+    pointer-events: all;
 `;
 
 let first = 21;
@@ -101,7 +113,13 @@ function Piano(props: { keyboard: PianoState }) {
                             let height = presser.fade * presser.volume * blackHeight;
                             top -= height * size + padding;
 
-                            ctx.fillStyle = getColAStr(presser.color, presser.fade);
+                            let newColor = {
+                              r: presser.color.r - 30,
+                              g: presser.color.g - 30,
+                              b: presser.color.b - 30
+                            }
+
+                            ctx.fillStyle = getColAStr(newColor, presser.fade);
                             ctx.fillRect(left, (top - (1 - blackHeight)) * ctx.canvas.clientHeight, width, height * size * ctx.canvas.clientHeight);
                         }
                     }
@@ -131,7 +149,13 @@ function Piano(props: { keyboard: PianoState }) {
                             let height = presser.fade * presser.volume;
                             top -= height * size + padding;
 
-                            ctx.fillStyle = getColAStr(presser.color, presser.fade);
+                            let newColor = {
+                              r: presser.color.r - 50,
+                              g: presser.color.g - 50,
+                              b: presser.color.b - 50
+                            }
+
+                            ctx.fillStyle = getColAStr(newColor, presser.fade);
                             ctx.fillRect(left, top * ctx.canvas.clientHeight, width, height * size * ctx.canvas.clientHeight);
                         }
                     }
