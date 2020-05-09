@@ -5,7 +5,7 @@ import { Color } from '../../data/misc';
 const MsgContainer = styled.div`
     padding: 0.3px;
     background-color: #444444;
-    box-shadow: 0 0 5px black;
+    box-shadow: 0 0 3px black;
     border-radius: 12px;
     display: flex;
     user-select: none;
@@ -43,13 +43,13 @@ const Username = styled.div<{color: string}>`
     font-size: 15px;
     color: ${props => props.color};
     font-weight: 700;
-    padding-bottom: 1px;
+    padding-top: 1px;
 `;
 
 const Text = styled.div`
     font-size: 15px;
     color: #ccc;
-    padding-bottom: 1px;
+    padding-top: 1px;
     margin-left: 5px;
     word-wrap: break-word;
     word-break: break-word;
