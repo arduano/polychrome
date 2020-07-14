@@ -53,8 +53,8 @@ export class MidiHandler {
     }
 
     private noteOn(e: InputEventNoteon) {
-        if (e.velocity <= 6 / 127) return;
-        if (e.channel == 10) return;
+        if (e.velocity <= 20 / 127) return;
+        if (e.channel === 10) return;
         this.rateFactor -= (Date.now() - this.lastNoteTime) / 1000 * this.maxNps;
         this.lastNoteTime = Date.now();
         if (this.rateFactor < 0) this.rateFactor = 0;
@@ -64,12 +64,12 @@ export class MidiHandler {
     }
 
     private noteOff(e: InputEventNoteoff) {
-        if (e.channel == 10) return;
+        if (e.channel === 10) return;
         this.pianoState?.unpressKeyLocal(e.note.number)
     }
 
     private channelMode(e: InputEventChannelmode) {
-        if (e.controller.name == "allsoundoff") {
+        if (e.controller.name === "allsoundoff") {
             console.log("allsoundoff");
             for (var i = 0; i < 128; i++) {
                 this.pianoState?.unpressAllKeysLocal();

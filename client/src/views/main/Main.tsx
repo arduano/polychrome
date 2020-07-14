@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Piano from '../../parts/piano/piano';
 import styled from 'styled-components';
 import User from '../../parts/user/user';
@@ -137,32 +137,46 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
     const [volume, setVol] = useState<number>(100);
     const [msg, setMsg] = useState<Msg[]>([]);
     const [msgSent, setMsgSent] = useState<boolean>(false);
+    const [chatFocused, setChatFocused] = useState<boolean>(false);
     const [chatBoxText, setChatBoxText] = useState<string>("");
-    const [state, setState] = useState({keyboardState, roomUsers, volume, msg});
-    state.roomUsers = roomUsers;
-    state.keyboardState = keyboardState;
-    state.volume = volume;
-    state.msg = msg;
+
+    const roomUsersRef = useRef<JoinedUser[]>()
+    roomUsersRef.current = roomUsers;
+
+    const keyboardStateRef = useRef<PianoState | undefined>()
+    keyboardStateRef.current = keyboardState;
+
+    const volumeRef = useRef<number>()
+    volumeRef.current = volume;
+
+    const msgRef = useRef<Msg[]>()
+    msgRef.current = msg;
 
     let api = props.api;
 
+    console.log(roomUsersRef.current)
+
     const processApi = () => {
         api.joinRoom(props.match.params.room).then((data: JoinRoomData) => {
+
+            const filterOutUser = (id: string) => {
+                return roomUsersRef.current!.filter(u => u.id !== id);
+            }
+
             api.on('user join', (user) => {
-                setRoomUsers(u => u.concat([user]));
+                setRoomUsers([...filterOutUser(user.id), user]);
             })
             api.on('user leave', (user) => {
-                let i = roomUsers.findIndex(u => u.id == user.id);
-                setRoomUsers(u => u.filter(_u => _u.id !== user.id));
+                setRoomUsers(filterOutUser(user.id));
             })
             api.on('note on', (user, key, velocity) => {
-                state.keyboardState!.pressKeyWeb(key, velocity, user.id, user.color);
+                keyboardStateRef.current!.pressKeyWeb(key, velocity, user.id, user.color);
             })
             api.on('note off', (user, key) => {
-                state.keyboardState!.unpressKeyWeb(key, user.id);
+                keyboardStateRef.current!.unpressKeyWeb(key, user.id);
             })
             api.on('chat', (text, user) => {
-                setMsg([{text, user, id: msgId++}, ...state.msg]);
+                setMsg([{ text, user, id: msgId++ }, ...msgRef.current]);
                 setMsgSent(true);
             })
             setRoomUsers(data.users);
@@ -170,7 +184,7 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
     }
 
     const sendMessage = (text: string) => {
-        setMsg([{text, user: api.self, id: msgId++}, ...state.msg]);
+        setMsg([{ text, user: api.self, id: msgId++ }, ...msgRef.current]);
         api.sendMessage(text);
         setMsgSent(true);
     }
@@ -183,14 +197,14 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
 
         document.addEventListener("keydown", event => {
             let target = event.target as Element;
-            if(event.repeat) return;
-            if(target.tagName == "INPUT") return;
-            if(standardKeyMap[event.key.toLocaleLowerCase()]) _keyboardState.pressKeyLocal(standardKeyMap[event.key.toLocaleLowerCase()], 1)
+            if (event.repeat) return;
+            if (target.tagName == "INPUT") return;
+            if (standardKeyMap[event.key.toLocaleLowerCase()]) _keyboardState.pressKeyLocal(standardKeyMap[event.key.toLocaleLowerCase()], 1)
         });
 
         document.addEventListener("keyup", event => {
             let target = event.target as Element;
-            if(target.tagName == "INPUT") return;
+            if (target.tagName == "INPUT") return;
             if (standardKeyMap[event.key.toLocaleLowerCase()]) _keyboardState.unpressKeyLocal(standardKeyMap[event.key.toLocaleLowerCase()])
         });
     }, [])
@@ -199,42 +213,46 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
 
     return (
         <Container>
-          <ChatDim id={"chatContainer"}>
-              <ChatContainer>
-                  <MsgContainer ref={e => {
-                    if(!e) return;
-                    if(msgSent)
-                    {
-                      e.scrollTop = e.scrollHeight;
-                      setMsgSent(false);
-                    }
-                  }}>
-                      {msgReverse.map(msg => (
-                          <ChatMsg key={msg.id}>
-                              <Msg text={msg.text} name={msg.user.name} color={msg.user.color} pfp={msg.user.pfp} />
-                          </ChatMsg>
-                      ))}
-                  </MsgContainer>
-                  <ChatInput value={chatBoxText} onChange={e => {
-                      let newText = e.target.value;
-                      if(newText.length > 1000) {
-                          if(newText.startsWith(chatBoxText)) {
-                              newText = newText.substr(0, 1000);
-                          } else {
-                              return;
-                          }
-                      }
-                      setChatBoxText(newText)
-                  }} 
-                  onKeyPress={e => {
-                      if(e.key == "Enter" && chatBoxText.trimStart().trimEnd().length > 0) {
-                          sendMessage(chatBoxText.trimStart().trimEnd());
-                          setChatBoxText("");
-                      }
-                  }}
-                  onFocus={e => { let chat = document.getElementById("chatContainer") as HTMLElement; chat.style.zIndex="1"; chat.style.background="#0000008c"}}
-                  onBlur={e => {let chat = document.getElementById("chatContainer") as HTMLElement; chat.style.zIndex="0"; chat.style.background="transparent"}}></ChatInput>
-              </ChatContainer>
+            <ChatDim
+                style={{
+                    zIndex: chatFocused ? 1 : 0,
+                    background: chatFocused ? '#0000008c' : 'transparent',
+                }}
+            >
+                <ChatContainer>
+                    <MsgContainer ref={e => {
+                        if (!e) return;
+                        if (msgSent) {
+                            e.scrollTop = e.scrollHeight;
+                            setMsgSent(false);
+                        }
+                    }}>
+                        {msgReverse.map(msg => (
+                            <ChatMsg key={msg.id}>
+                                <Msg text={msg.text} name={msg.user.name} color={msg.user.color} pfp={msg.user.pfp} />
+                            </ChatMsg>
+                        ))}
+                    </MsgContainer>
+                    <ChatInput value={chatBoxText} onChange={e => {
+                        let newText = e.target.value;
+                        if (newText.length > 1000) {
+                            if (newText.startsWith(chatBoxText)) {
+                                newText = newText.substr(0, 1000);
+                            } else {
+                                return;
+                            }
+                        }
+                        setChatBoxText(newText);
+                    }}
+                        onKeyPress={e => {
+                            if (e.key == "Enter" && chatBoxText.trimStart().trimEnd().length > 0) {
+                                sendMessage(chatBoxText.trimStart().trimEnd());
+                                setChatBoxText("");
+                            }
+                        }}
+                        onFocus={e => setChatFocused(true)}
+                        onBlur={e => setChatFocused(false)}></ChatInput>
+                </ChatContainer>
             </ChatDim>
             <PianoContainer>
                 {keyboardState && <Piano keyboard={keyboardState} />}
@@ -249,8 +267,8 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
                 </UserBar>
             </TopBar>
             <ToolbarContainer>
-                <PopoutButton text={'Room'}><div style={{height: '9999px'}}>Test</div></PopoutButton>
-                <PopoutButton text={'MIDI'}><div style={{height: '220px'}}><MidiPopout midiHandler={props.midiHandler}></MidiPopout></div></PopoutButton>
+                <PopoutButton text={'Room'}><div style={{ height: '9999px' }}>Test</div></PopoutButton>
+                <PopoutButton text={'MIDI'}><div style={{ height: '220px' }}><MidiPopout midiHandler={props.midiHandler}></MidiPopout></div></PopoutButton>
                 <PopoutButton text={'Settings'}><div style={{}}>Shit</div></PopoutButton>
                 <div style={{ display: 'flex' }}>
                     Volume:

@@ -179,6 +179,7 @@ export default class SocketRooms {
         })
 
         socket.on('send msg', (text: string) => {
+            text = text.substr(0, 1000);
             emitToOthers('chat', text, roomUser.id);
         })
     }

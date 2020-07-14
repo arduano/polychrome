@@ -69,6 +69,7 @@ app.get('/api/info', (req, res) => {
 
 app.post('/api/accounts/guest', (req, res) => {
     if (req.body.name == null) res.status(400).send('Name required');
+    if (req.body.name.length >= 25) res.status(400).send('Name too long');
     let name = req.body.name.toString();
     res.status(200).send(accounts.makeGuestAccount(name));
 })

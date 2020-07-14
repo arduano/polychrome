@@ -119,7 +119,7 @@ function App() {
     const submitName = (name: string) => {
         if (loggingIn) return;
         name = name.trim();
-        if (name.length == 0 || name.length > 25) return;
+        if (name.length === 0 || name.length >= 25) return;
         localStorage.setItem('guestName', name);
         localStorage.setItem('guestNameTime', Date.now().toString());
         BPRApi.logInAsGuest(name).then(api => {
@@ -143,7 +143,7 @@ function App() {
         }
     })()
 
-    if (mainInput != 'loading' && !inputLoaded) {
+    if (mainInput !== 'loading' && !inputLoaded) {
         mainInput.focus();
         setInputLoaded(true);
     }
@@ -189,7 +189,7 @@ function App() {
                                         spellCheck={false}
                                         value={enteredName}
                                         onChange={e => {
-                                            if (e.target.value.length > 25) return;
+                                            if (e.target.value.length >= 25) return;
                                             setEnteredName(e.target.value)
                                         }}
                                         ref={e => {
@@ -198,7 +198,7 @@ function App() {
                                             }
                                         }}
                                         onKeyPress={e => {
-                                            if (e.key == 'Enter') {
+                                            if (e.key === 'Enter') {
                                                 if (inputLoaded && mainInput !== 'loading') {
                                                     submitName(mainInput.value);
                                                 }
