@@ -18,7 +18,7 @@
     "@types/socket.io-client": "^1.4.32",
     "@types/styled-components": "^5.0.1",
     "@types/webmidi": "^2.0.4",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "babel-plugin-module-resolver": "^4.0.0",
     "mobx": "^5.15.4",
     "mobx-react": "^6.1.8",
