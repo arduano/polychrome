@@ -21,6 +21,7 @@
     "nanoid": "^2.1.11",
     "nodemon": "^2.0.2",
     "socket.io": "^2.3.0",
+    "ts-node": "^9.1.1",
     "typescript": "^4.1.3"
   }
 }
