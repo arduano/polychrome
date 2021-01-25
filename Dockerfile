@@ -3,7 +3,7 @@ WORKDIR /usr/src/app
 COPY . .
 RUN npm install -g typescript@3.7.5 ts-node
 
-RUN yarn install
+RUN yarn install --pure-lock-file
 RUN rm -rf build
 RUN cd server && yarn build
 RUN cd client && yarn build
