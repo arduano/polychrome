@@ -18,6 +18,6 @@
     "jsonwebtoken": "^8.5.1",
     "nanoid": "^2.1.11",
     "nodemon": "^2.0.2",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.4.0"
   }
 }
