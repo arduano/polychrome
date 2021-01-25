@@ -1,7 +1,7 @@
 FROM node:13.12.0 as builder
 WORKDIR /usr/src/app
 COPY . .
-RUN npm install -g typescript ts-node
+RUN npm install -g typescript@3.7.5 ts-node
 
 RUN yarn install
 RUN rm -rf build
