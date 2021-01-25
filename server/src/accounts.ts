@@ -3,7 +3,7 @@ import nanoid from 'nanoid';
 import { User } from 'data/misc';
 import { guestPfpUrl } from './users';
 
-let secret = 'temporary-jwt-secret'
+let secret = process.env.TOKEN_SECRET
 
 interface Token {
     exp?: number;

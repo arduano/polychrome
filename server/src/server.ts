@@ -8,6 +8,9 @@ import Socket from './sockets';
 import * as accounts from './accounts';
 import path from 'path';
 
+const dotenv = require('dotenv');
+dotenv.config({ path: './.env' });
+
 const app = express()
 
 const server = require('http').createServer(app);

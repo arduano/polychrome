@@ -1,9 +1,9 @@
 version: "3"
 services:
-  tenor-sad:
+  polychrome:
     build: '.'
     image: polychrome
-    container_name: app_polychrome
+    container_name: polychrome
     restart: unless-stopped
     ports:
-      - "8082:8080"
+      - ${PORT}:8080

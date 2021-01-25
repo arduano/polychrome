@@ -16,4 +16,5 @@ EXPOSE 3000
 WORKDIR /usr/src/app
 USER node
 COPY --from=builder /usr/src/app/build .
+COPY .env .env
 CMD node server.js
