@@ -20,7 +20,7 @@
     "@types/webmidi": "^2.0.4",
     "axios": "^0.19.2",
     "babel-plugin-module-resolver": "^4.0.0",
-    "mobx": "^5.15.4",
+    "mobx": "^6.0.5",
     "mobx-react": "^7.0.6",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
@@ -37,7 +37,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && cp build ../build/web -r",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

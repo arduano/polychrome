@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "nodemon --watch \"./src/**/*.ts\" --exec ts-node ./src/server.ts",
-    "build": "tsc && cp audio ../build/audio -r && cd ../build && cp server/src/* ./ -r && rm -rf server && rm -rf client"
+    "build": "tsc"
   },
   "dependencies": {
     "@types/express": "^4.17.3",
