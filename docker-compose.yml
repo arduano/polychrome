@@ -6,4 +6,4 @@ services:
     container_name: polychrome
     restart: unless-stopped
     ports:
-      - ${PORT}:8080
+      - ${PORT}:${PORT}
