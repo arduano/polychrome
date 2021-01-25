@@ -1,20 +1,21 @@
 {
-    "compilerOptions": {
-        "lib": ["es2015", "dom"],
-        "downlevelIteration": true,
-        "sourceMap": true,
-        "experimentalDecorators": true,
-        "preserveConstEnums": true,
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "allowJs": true,
-        "noFallthroughCasesInSwitch": true,
-        "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
-        "resolveJsonModule": true,
-        "emitDecoratorMetadata": true,
-        "module": "commonjs",
-        "jsx": "preserve"
-    },
-    "exclude": ["./node_modules/*"]
+  "compilerOptions": {
+    "lib": ["es2015", "dom"],
+    "downlevelIteration": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "preserveConstEnums": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "module": "commonjs",
+    "jsx": "preserve",
+    "noEmit": true
+  },
+  "exclude": ["./node_modules/*"]
 }

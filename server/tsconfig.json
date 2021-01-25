@@ -1,27 +1,15 @@
 {
-    "extends": "../tsconfig.json",
-    "compilerOptions": {
-        "target": "es6",
-        "baseUrl": "./src",
-        "outDir": "../build/",
-        "sourceMap": false,
-        "paths": {
-            "*": [
-                "./*",
-                "../../client/src/*"
-            ]
-        },
-        "lib": [
-            "es2018",
-            "dom"
-        ]
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "es6",
+    "baseUrl": "./src",
+    "outDir": "../build/",
+    "sourceMap": false,
+    "paths": {
+      "*": ["./*", "../../client/src/*"]
     },
-    "include": [
-        "**/*.ts",
-        "**/*.tsx"
-    ],
-    "exclude": [
-        "./node_modules",
-        "../node_modules"
-    ],
+    "lib": ["es2018", "dom"],
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["./node_modules", "../node_modules"]
 }

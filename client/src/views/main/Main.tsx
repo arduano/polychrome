@@ -176,7 +176,7 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
                 keyboardStateRef.current!.unpressKeyWeb(key, user.id);
             })
             api.on('chat', (text, user) => {
-                setMsg([{ text, user, id: msgId++ }, ...msgRef.current]);
+                setMsg([{ text, user, id: msgId++ }, ...(msgRef.current ?? [])]);
                 setMsgSent(true);
             })
             setRoomUsers(data.users);
@@ -184,7 +184,7 @@ function Main(props: MainProps & RouteComponentProps<{ room: string }, {}, {}>) 
     }
 
     const sendMessage = (text: string) => {
-        setMsg([{ text, user: api.self, id: msgId++ }, ...msgRef.current]);
+        setMsg([{ text, user: api.self, id: msgId++ }, ...(msgRef.current ?? [])]);
         api.sendMessage(text);
         setMsgSent(true);
     }

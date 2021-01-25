@@ -95,7 +95,7 @@ class BPRApi extends events.EventEmitter {
             });
             socket.on('ready', (data: ReadyData) => {
                 color = data.color;
-                res()
+                res(undefined)
             });
             socket.on('login error', () => {
                 socket.close();

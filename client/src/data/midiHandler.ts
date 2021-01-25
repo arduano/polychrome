@@ -23,7 +23,7 @@ export class MidiHandler {
                     err ? console.log("WebMIDI could not start!") : console.log("WebMIDI started!");
 
                     if (err) rej();
-                    else ret();
+                    else ret(undefined);
 
                     console.log('Inputs:', webmidi.inputs);
                     console.log('Outputs:', webmidi.outputs);
